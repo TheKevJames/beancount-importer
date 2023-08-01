@@ -18,6 +18,7 @@ _FILENAME_PATTERN = re.compile(r'Chase(\d{4})_Activity_[\d_]{8}.*\.CSV',
                                re.IGNORECASE)
 
 
+# TODO: good candidate to base-class-ify
 class ChaseCheckingImporter(importer.ImporterProtocol):
     def __init__(self,
                  account,

@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "beancount-importer"
+version = "0.1.0"
+description = "Various beancount importers"
+readme = "README.rst"
+
+repository = "https://github.com/TheKevJames/beancount-importer"
+authors = [
+    "Kevin James <kevinjames@thekev.in>",
+]
+license = "MIT"
+
+packages = [
+    { include = "beancount_importer" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

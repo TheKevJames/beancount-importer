@@ -53,4 +53,5 @@ class AmexImporter(ImporterProtocol):
 
                 entries.append(txn)
 
+        # TODO: append data.Balance() record
         return entries

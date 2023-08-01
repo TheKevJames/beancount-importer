@@ -65,12 +65,8 @@ class ChaseCheckingImporter(importer.ImporterProtocol):
         transaction_date = datetime.datetime.strptime(row[_COLUMN_DATE],
                                                       '%m/%d/%Y').date()
         payee, transaction_description = _parse_description(row[_COLUMN_PAYEE])
-        if payee:
-            payee = titlecase.titlecase(payee)
-        else:
-            raise ValueError(f'failed to parse {row[_COLUMN_PAYEE]}')
-        if transaction_description:
-            narration = titlecase.titlecase(transaction_description)
+        payee = titlecase.titlecase(payee)
+        narration = titlecase.titlecase(transaction_description)
         if row[_COLUMN_AMOUNT]:
             transaction_amount = self._parse_amount(row[_COLUMN_AMOUNT])
         else:
@@ -136,4 +132,4 @@ def _parse_description(description):
     match = _INBOUND_TRANSFER_PATTERN.search(description)
     if match:
         return match.group(1), description
-    return None, None
+    return 'Unknown', description

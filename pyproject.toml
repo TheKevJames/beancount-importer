@@ -16,6 +16,8 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
+beancount = ">=2.0.0,<3.0.0"
+titlecase = ">=2.0.0,<3.0.0"
 
 [build-system]
 requires = ["poetry-core"]

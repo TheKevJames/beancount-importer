@@ -23,6 +23,7 @@ Directive = (data.Balance | data.Close | data.Commodity | data.Custom
 
 class AccountPatternTarget(int, enum.Enum):
     BOTH = enum.auto()
+    EITHER = enum.auto()
     NARRATION = enum.auto()
     PAYEE = enum.auto()
 
@@ -34,7 +35,7 @@ class AccountPattern:
             pattern: str,
             *,
             flags: int = 0,
-            target: AccountPatternTarget = AccountPatternTarget.BOTH,
+            target: AccountPatternTarget = AccountPatternTarget.EITHER,
     ) -> None:
         self.account = account
         self.pattern = re.compile(pattern, flags)
@@ -45,6 +46,8 @@ class AccountPattern:
             return self.pattern.search(tx.narration)
         if self.target == AccountPatternTarget.PAYEE:
             return tx.payee is not None and self.pattern.search(tx.payee)
+        if self.target == AccountPatternTarget.BOTH:
+            return self.pattern.search(f'{tx.payee or ""};{tx.narration}')
         return (self.pattern.search(tx.narration)
                 or (tx.payee is not None and self.pattern.search(tx.payee)))
 

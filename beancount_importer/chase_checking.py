@@ -121,6 +121,9 @@ _OUTBOUND_TRANSFER_PATTERN = re.compile(
 _INBOUND_TRANSFER_PATTERN = re.compile(
     r'Online Transfer \d+ from (.+?)\s*transaction #', re.IGNORECASE)
 
+_GENERIC_PATTERN = re.compile(
+    r'(.+?)\s+(PPD|WEB) ID: \d+', re.IGNORECASE)
+
 
 def _parse_description(description):
     match = _DESCRIPTION_PATTERN.search(description)
@@ -132,4 +135,7 @@ def _parse_description(description):
     match = _INBOUND_TRANSFER_PATTERN.search(description)
     if match:
         return match.group(1), description
+    match = _GENERIC_PATTERN.search(description)
+    if match:
+        return match.group(1), match.group(1)
     return 'Unknown', description

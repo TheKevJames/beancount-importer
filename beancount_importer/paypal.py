@@ -1,6 +1,6 @@
 import csv
 import datetime
-import os
+import re
 from collections.abc import Iterable
 from collections.abc import Iterator
 from dateutil.parser import parse
@@ -9,24 +9,18 @@ from typing import Any
 import titlecase
 from beancount.core.number import D
 from beancount.core import amount
-from beancount.core import flags
 from beancount.core import data
-from beancount.ingest.importer import ImporterProtocol
 from beancount.ingest.cache import _FileMemo as File
+
+from .utils import Importer
 
 
 MetaTuple = tuple[datetime.datetime, dict[str, int | str], str, str,
                   amount.Amount]
 
 
-class PaypalImporter(ImporterProtocol):
-    # TODO: categorization support
-    def __init__(self, account: str) -> None:
-        self.account = account
-        self.category = 'Expenses:Unknown'
-
-    def file_account(self, _f: File) -> str:
-        return self.account
+class PaypalImporter(Importer):
+    regex_fname = re.compile(r'Download.CSV')
 
     @staticmethod
     def _get_date(row: dict[str, Any]) -> str:
@@ -35,18 +29,6 @@ class PaypalImporter(ImporterProtocol):
         if value is not None:
             return value
         return row['Date']
-
-    def file_date(self, f: File) -> datetime.datetime | None:
-        with open(f.name, encoding='utf-8') as f:
-            dates: list[datetime.datetime] = []
-            for row in csv.DictReader(f):
-                dates.append(parse(self._get_date(row)).date())
-            return max(dates)
-
-        return None
-
-    def identify(self, f: File) -> bool:
-        return os.path.basename(f.name) == 'Download.CSV'
 
     def _extract(self, fname: str) -> Iterator[MetaTuple]:
         with open(fname, encoding='utf-8') as f:
@@ -96,7 +78,8 @@ class PaypalImporter(ImporterProtocol):
         if data:
             yield data
 
-    def _consolidate_conversions(self, xs: list[MetaTuple]) -> list[data.Posting]:
+    def _consolidate_conversions(self,
+                                 xs: list[MetaTuple]) -> list[data.Posting]:
         """
         Turn a set of records into one Posting with a conversion.
 
@@ -122,10 +105,12 @@ class PaypalImporter(ImporterProtocol):
         # TODO: fetch option account_current_conversions
         # https://beancount.github.io/docs/beancount_options_reference.html
         conv = 'Equity:Conversions:Current'
+        # TODO: integrate with account_patterns
+        category = 'Expenses:Unknown'
         return [
-            data.Posting(self.category, -expense[4], None, None, None, None),
-            data.Posting(self.account, cost, None, None, None, None),
-            data.Posting(conv, None, None, None, None, None),
+            self._posting(category, -expense[4]),
+            self._posting(self.account, cost),
+            self._posting(conv, None),
         ]
 
     def _merge(
@@ -136,16 +121,14 @@ class PaypalImporter(ImporterProtocol):
             postings = self._consolidate_conversions(xs)
 
             date, meta, payee, narration, _ = xs[0]
-            yield data.Transaction(
+            yield self._transaction(
                 meta=meta,
                 date=date,
-                flag=flags.FLAG_OKAY,
                 payee=payee,
                 narration=narration,
-                tags=set(),
-                links=set(),
                 postings=postings,
             )
 
+    # TODO: refactor to reuse some base class stuff
     def extract(self, f: File) -> list[data.Transaction]:
         return list(self._merge(self._group(self._extract(f.name))))

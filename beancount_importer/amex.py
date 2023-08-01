@@ -1,57 +1,33 @@
-import csv
-import os
 import re
 from dateutil.parser import parse
+from typing import Any
 
-import titlecase
-from beancount.core.number import D
-from beancount.core import amount
-from beancount.core import flags
 from beancount.core import data
-from beancount.ingest.importer import ImporterProtocol
-from beancount.ingest.cache import _FileMemo as File
+
+from .utils import Importer
 
 
-class AmexImporter(ImporterProtocol):
-    # TODO: categorization support
-    def __init__(self, account: str, *, currency: str = 'USD') -> None:
-        self.account = account
-        self.currency = currency
+class AmexImporter(Importer):
+    _default_currency = 'USD'
 
-    def identify(self, f: File) -> bool:
-        return bool(re.match(r'Transactions.*\.csv', os.path.basename(f.name)))
+    regex_fname = re.compile(r'Transactions.*\.csv')
 
-    def extract(self, f: File) -> list[data.Transaction]:
-        entries = []
+    def _extract_from_row(
+            self,
+            row: dict[str, Any],
+            meta: data.Meta,
+    ) -> data.Transaction:
+        # TODO: check if splitting is necessary
+        date = parse(row['Date'].split(' ')[0]).date()
+        # TODO: parse out payee vs narration?
+        narration = row['Description']
+        amt = -self._amount(row['Amount'])
 
-        with open(f.name, encoding='utf-8') as f:
-            for index, row in enumerate(csv.DictReader(f)):
-                trans_date = parse(row['Date'].split(' ')[0]).date()
-                trans_desc = titlecase.titlecase(row['Description'])
-                trans_amt = row['Amount']
-
-                meta = data.new_metadata(f.name, index)
-
-                txn = data.Transaction(
-                    meta=meta,
-                    date=trans_date,
-                    flag=flags.FLAG_OKAY,
-                    payee=trans_desc,
-                    narration="",
-                    tags=set(),
-                    links=set(),
-                    postings=[],
-                )
-
-                txn.postings.append(
-                    data.Posting(
-                        self.account,
-                        amount.Amount(-1*D(trans_amt), self.currency),
-                        None, None, None, None
-                    )
-                )
-
-                entries.append(txn)
-
-        # TODO: append data.Balance() record
-        return entries
+        return self._transaction(
+            meta=meta,
+            date=date,
+            narration=narration,
+            postings=[
+                self._posting(self.account, amt),
+            ],
+        )

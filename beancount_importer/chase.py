@@ -30,11 +30,11 @@ class ChaseImporter(Importer):
                  account_patterns: None | list[tuple[re.Pattern, str]] = None):
         super().__init__(account, account_patterns=account_patterns,
                          currency=currency)
-        self._last_four_account_digits = lastfour
+        self.lastfour = lastfour
 
     def identify(self, f: File) -> bool:
         match = self.regex_fname.match(os.path.basename(f.name))
-        return bool(match and self._last_four_account_digits == match.group(1))
+        return bool(match and self.lastfour == match.group(1))
 
     def _parse_description(self, description: str) -> tuple[str | None, str]:
         match = self.regex_desc_full.search(description)

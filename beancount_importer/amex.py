@@ -1,16 +1,15 @@
 import re
-from dateutil.parser import parse
 from typing import Any
 
 from beancount.core import data
+from dateutil.parser import parse
 
 from .utils import Importer
 
 
 class AmexImporter(Importer):
     _default_currency = 'USD'
-
-    regex_fname = re.compile(r'Transactions.*\.csv')
+    _regex_fname = re.compile(r'Transactions.*\.csv')
 
     def _extract_from_row(
             self,

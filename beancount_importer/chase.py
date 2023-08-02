@@ -1,19 +1,17 @@
-import os
 import re
-from dateutil.parser import parse
 from typing import Any
 
 from beancount.core import data
-from beancount.ingest.cache import _FileMemo as File
+from dateutil.parser import parse
 
 from .utils import Importer
 
 
 class ChaseImporter(Importer):
     _default_currency = 'USD'
-
-    regex_fname = re.compile(r'Chase(\d{4})_Activity([\d]+_)*[\d]+.CSV',
-                             re.IGNORECASE)
+    _require_lastfour = True
+    _regex_fname = re.compile(r'Chase(\d{4})_Activity([\d]+_)*[\d]+.CSV',
+                              re.IGNORECASE)
 
     regex_desc_full = re.compile(
         (r'ORIG CO NAME:(.+?)\s*ORIG ID:.*DESC DATE:.*CO ENTRY DESCR:(.+?)\s*'
@@ -25,16 +23,6 @@ class ChaseImporter(Importer):
         r'Online Transfer \d+ from (.+?)\s*transaction #', re.IGNORECASE)
     regex_desc_outbound_tx = re.compile(
         r'Online Transfer \d+ to (.+?)\s*transaction #', re.IGNORECASE)
-
-    def __init__(self, account: str, lastfour: str, *, currency: str = 'USD',
-                 account_patterns: None | list[tuple[re.Pattern, str]] = None):
-        super().__init__(account, account_patterns=account_patterns,
-                         currency=currency)
-        self.lastfour = lastfour
-
-    def identify(self, f: File) -> bool:
-        match = self.regex_fname.match(os.path.basename(f.name))
-        return bool(match and self.lastfour == match.group(1))
 
     def _parse_description(self, description: str) -> tuple[str | None, str]:
         match = self.regex_desc_full.search(description)

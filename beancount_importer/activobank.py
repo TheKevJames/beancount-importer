@@ -1,30 +1,18 @@
 import datetime
-import os
 import re
 from collections.abc import Iterator
 from typing import Any
 
 import openpyxl
 from beancount.core import data
-from beancount.ingest.cache import _FileMemo as File
 
 from .utils import Importer
 
 
 class ActivoBankImporter(Importer):
     _default_currency = 'EUR'
-
-    regex_fname = re.compile(r'^mov\d+(\d{4})-\d+-\d+.xlsx$')
-
-    def __init__(self, account: str, lastfour: str, *, currency: str = 'EUR',
-                 account_patterns: None | list[tuple[re.Pattern, str]] = None):
-        super().__init__(account, account_patterns=account_patterns,
-                         currency=currency)
-        self.lastfour = lastfour
-
-    def identify(self, f: File) -> bool:
-        match = self.regex_fname.match(os.path.basename(f.name))
-        return bool(match and self.lastfour == match.group(1))
+    _require_lastfour = True
+    _regex_fname = re.compile(r'^mov\d+(\d{4})-\d+-\d+.xlsx$')
 
     def _extract_from_row(
             self,

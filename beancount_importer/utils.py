@@ -59,18 +59,24 @@ class AccountPattern:
 # TODO: identifier.IdentifyMixin ?
 class Importer(ImporterProtocol):
     _default_currency: data.Currency | None = None
-    regex_fname: re.Pattern
+    _require_lastfour: bool = False
+    _regex_fname: re.Pattern
 
     def __init__(
             self,
             account: data.Account,
             *,
-            currency: data.Currency | None = None,
             account_patterns: list[AccountPattern] | None = None,
+            currency: data.Currency | None = None,
+            lastfour: str | None = None,
     ) -> None:
         self.account = account
-        self.currency = currency or self._default_currency
         self.account_patterns = account_patterns or []
+        self.currency = currency or self._default_currency
+        self.lastfour = lastfour
+
+        if self._require_lastfour and self.lastfour is None:
+            raise ValueError('lastfour="xxxx" must be provided')
 
     def file_account(self, _f: File) -> str:
         return self.account
@@ -79,7 +85,10 @@ class Importer(ImporterProtocol):
         return max([x.date for x in self.extract(f)])
 
     def identify(self, f: File) -> bool:
-        return bool(self.regex_fname.match(os.path.basename(f.name)))
+        match = self._regex_fname.match(os.path.basename(f.name))
+        if not match:
+            return False
+        return self.lastfour is None or self.lastfour == match.group(1)
 
     def name(self) -> str:
         return f'{super().name()}.{self.account}'

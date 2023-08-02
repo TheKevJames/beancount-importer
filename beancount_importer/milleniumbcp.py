@@ -11,8 +11,7 @@ from .utils import Importer
 
 class MilleniumBCPImporter(Importer):
     _default_currency = 'EUR'
-
-    regex_fname = re.compile(r'^MOVS_\d_\d+\.xlsx$')
+    _regex_fname = re.compile(r'^MOVS_\d_\d+\.xlsx$')
 
     def _extract_from_row(
             self,

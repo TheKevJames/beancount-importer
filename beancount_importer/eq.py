@@ -1,19 +1,18 @@
 import re
 from collections.abc import Iterator
-from dateutil.parser import parse
 from typing import Any
 
 import py_pdf_parser.loaders
 import py_pdf_parser.tables
 from beancount.core import data
+from dateutil.parser import parse
 
 from .utils import Importer
 
 
 class EQImporter(Importer):
     _default_currency = 'CAD'
-
-    regex_fname = re.compile(r'(\d+) .* Statement.pdf')
+    _regex_fname = re.compile(r'(\d+) .* Statement.pdf')
 
     def _parse_amount(self, row: dict[str, Any]) -> str:
         if row.get('Withdrawals'):

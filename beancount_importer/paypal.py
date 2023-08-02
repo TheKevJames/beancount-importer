@@ -3,14 +3,14 @@ import datetime
 import re
 from collections.abc import Iterable
 from collections.abc import Iterator
-from dateutil.parser import parse
 from typing import Any
 
 import titlecase
-from beancount.core.number import D
 from beancount.core import amount
 from beancount.core import data
+from beancount.core.number import D
 from beancount.ingest.cache import _FileMemo as File
+from dateutil.parser import parse
 
 from .utils import Importer
 
@@ -20,7 +20,7 @@ MetaTuple = tuple[datetime.datetime, dict[str, int | str], str, str,
 
 
 class PaypalImporter(Importer):
-    regex_fname = re.compile(r'Download.CSV')
+    _regex_fname = re.compile(r'Download.CSV')
 
     @staticmethod
     def _get_date(row: dict[str, Any]) -> str:

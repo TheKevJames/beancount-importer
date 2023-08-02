@@ -1,16 +1,15 @@
 import re
-from dateutil.parser import parse
 from typing import Any
 
 from beancount.core import data
+from dateutil.parser import parse
 
 from .utils import Importer
 
 
 class BrimImporter(Importer):
     _default_currency = 'CAD'
-
-    regex_fname = re.compile(r'statement-[\dA-Z]+-\d+\.csv')
+    _regex_fname = re.compile(r'statement-[\dA-Z]+-\d+\.csv')
 
     def _extract_from_row(
             self,

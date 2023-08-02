@@ -1,16 +1,15 @@
 import re
-from dateutil.parser import parse
 from typing import Any
 
 from beancount.core import data
+from dateutil.parser import parse
 
 from .utils import Importer
 
 
 class RevolutImporter(Importer):
     _default_currency = 'EUR'
-
-    regex_fname = re.compile(r'account-statement.*\.csv')
+    _regex_fname = re.compile(r'account-statement.*\.csv')
 
     def _extract_from_row(
             self,
@@ -21,7 +20,7 @@ class RevolutImporter(Importer):
         date = parse(row['Completed Date'].strip()).date()
         # TODO: parse out payee vs narration?
         narration = row['Description'].strip()
-        amt_raw = row['Amount'].replace("'", "").strip()
+        amt_raw = row['Amount'].replace("'", '').strip()
         amt = self._amount(amt_raw, row['Currency'])
 
         return self._transaction(

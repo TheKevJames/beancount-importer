@@ -1,22 +1,22 @@
+import os
 import re
-from dateutil.parser import parse
 from typing import Any
 
 from beancount.core import data
+from dateutil.parser import parse
+from beancount.ingest.cache import _FileMemo as File
 
 from .utils import Importer
 
 
 class RBCImporter(Importer):
     _default_currency = 'CAD'
+    _require_lastfour = True
+    _regex_fname = re.compile(r'csv\d+\.csv')
 
-    regex_fname = re.compile(r'csv\d+\.csv')
-
-    def __init__(self, account: str, lastfour: str, *, currency: str = 'CAD',
-                 account_patterns: None | list[tuple[re.Pattern, str]] = None):
-        super().__init__(account, account_patterns=account_patterns,
-                         currency=currency)
-        self.lastfour = lastfour
+    def identify(self, f: File) -> bool:
+        # TODO: _require_lastfour but not in filename? Mock the filename?
+        return bool(self._regex_fname.match(os.path.basename(f.name)))
 
     def _extract_from_row(
             self,

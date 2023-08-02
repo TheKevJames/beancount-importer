@@ -6,6 +6,7 @@ from .eq import EQImporter
 from .paypal import PaypalImporter
 from .rbc import RBCImporter
 from .revolut import RevolutImporter
+from .tangerine import TangerineImporter
 
 
 __version__ = importlib.metadata.version('beancount-importer')
@@ -14,5 +15,7 @@ __all__ = [
     'ChaseImporter',
     'EQImporter',
     'PaypalImporter',
+    'RBCImporter',
     'RevolutImporter',
+    'TangerineImporter',
 ]

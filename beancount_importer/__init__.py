@@ -2,6 +2,7 @@ import importlib
 
 from .activobank import ActivoBankImporter
 from .amex import AmexImporter
+from .brim import BrimImporter
 from .chase import ChaseImporter
 from .eq import EQImporter
 from .paypal import PaypalImporter
@@ -14,6 +15,7 @@ __version__ = importlib.metadata.version('beancount-importer')
 __all__ = [
     'ActivoBankImporter',
     'AmexImporter',
+    'BrimImporter',
     'ChaseImporter',
     'EQImporter',
     'PaypalImporter',

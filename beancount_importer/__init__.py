@@ -5,6 +5,7 @@ from .amex import AmexImporter
 from .brim import BrimImporter
 from .chase import ChaseImporter
 from .eq import EQImporter
+from .milleniumbcp import MilleniumBCPImporter
 from .paypal import PaypalImporter
 from .rbc import RBCImporter
 from .revolut import RevolutImporter
@@ -18,6 +19,7 @@ __all__ = [
     'BrimImporter',
     'ChaseImporter',
     'EQImporter',
+    'MilleniumBCPImporter',
     'PaypalImporter',
     'RBCImporter',
     'RevolutImporter',

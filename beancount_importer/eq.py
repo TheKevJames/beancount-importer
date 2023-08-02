@@ -1,6 +1,7 @@
 import re
 from collections.abc import Iterator
 from typing import Any
+from typing import cast
 
 import py_pdf_parser.loaders
 import py_pdf_parser.tables
@@ -17,7 +18,7 @@ class EQImporter(Importer):
     def _parse_amount(self, row: dict[str, Any]) -> str:
         if row.get('Withdrawals'):
             return f'-{row["Withdrawals"].strip("$")}'
-        return row['Deposits'].strip('$')
+        return cast(str, row['Deposits'].strip('$'))
 
     def _extract_from_row(
             self,

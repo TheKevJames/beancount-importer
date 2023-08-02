@@ -6,6 +6,7 @@ import re
 from collections.abc import Iterable
 from collections.abc import Iterator
 from typing import Any
+from typing import cast
 
 import titlecase
 from beancount.core import amount
@@ -16,9 +17,12 @@ from beancount.ingest.cache import _FileMemo as File
 from beancount.ingest.importer import ImporterProtocol
 
 
-Directive = (data.Balance | data.Close | data.Commodity | data.Custom
-             | data.Document | data.Event | data.Note | data.Open | data.Pad
-             | data.Price | data.Query | data.Transaction)
+# TODO: until the beancount.core.data type hints are working, this isn't very
+# useful.
+# Eventually, all extract() methods should get updated to return any directives
+# Directive = (data.Balance | data.Close | data.Commodity | data.Custom
+#              | data.Document | data.Event | data.Note | data.Open | data.Pad
+#              | data.Price | data.Query | data.Transaction)
 
 
 class AccountPatternTarget(int, enum.Enum):
@@ -43,13 +47,15 @@ class AccountPattern:
 
     def matches(self, tx: data.Transaction) -> bool:
         if self.target == AccountPatternTarget.NARRATION:
-            return self.pattern.search(tx.narration)
+            return bool(self.pattern.search(tx.narration))
         if self.target == AccountPatternTarget.PAYEE:
-            return tx.payee is not None and self.pattern.search(tx.payee)
+            return bool(tx.payee is not None and self.pattern.search(tx.payee))
         if self.target == AccountPatternTarget.BOTH:
-            return self.pattern.search(f'{tx.payee or ""};{tx.narration}')
-        return (self.pattern.search(tx.narration)
-                or (tx.payee is not None and self.pattern.search(tx.payee)))
+            return bool(self.pattern.search(
+                f'{tx.payee or ""};{tx.narration}'))
+        return bool(self.pattern.search(tx.narration)
+                    or (tx.payee is not None
+                        and self.pattern.search(tx.payee)))
 
     def posting(self, tx: data.Transaction) -> data.Posting:
         amt = -tx.postings[0].units
@@ -57,10 +63,10 @@ class AccountPattern:
 
 
 # TODO: identifier.IdentifyMixin ?
-class Importer(ImporterProtocol):
+class Importer(ImporterProtocol):  # type: ignore[misc]
     _default_currency: data.Currency | None = None
     _require_lastfour: bool = False
-    _regex_fname: re.Pattern
+    _regex_fname: re.Pattern[str]
 
     def __init__(
             self,
@@ -79,10 +85,15 @@ class Importer(ImporterProtocol):
             raise ValueError('lastfour="xxxx" must be provided')
 
     def file_account(self, _f: File) -> str:
-        return self.account
+        return str(self.account)
 
-    def file_date(self, f: File) -> datetime.datetime:
-        return max([x.date for x in self.extract(f)])
+    def file_date(self, f: File) -> datetime.datetime | None:
+        try:
+            value = max(x.date for x in self.extract(f))
+            return cast(datetime.datetime, value)
+        except ValueError:
+            # why are you filing this, anyway?
+            return None
 
     def identify(self, f: File) -> bool:
         match = self._regex_fname.match(os.path.basename(f.name))
@@ -135,23 +146,26 @@ class Importer(ImporterProtocol):
             self,
             row: dict[str, Any],
             meta: data.Meta,
-    ) -> Directive | None:
+    ) -> data.Transaction | None:
         raise NotImplementedError()
 
-    def _extract(self, fname: str) -> Iterator[Directive | None]:
+    def _extract(self, fname: str) -> Iterator[data.Transaction | None]:
         with open(fname, encoding='utf-8') as f:
             for index, row in enumerate(csv.DictReader(f)):
                 meta = data.new_metadata(fname, index)
                 yield self._extract_from_row(row, meta)
 
-    def _filter(self, xs: Iterable[Directive | None]) -> Iterator[Directive]:
+    def _filter(
+            self,
+            xs: Iterable[data.Transaction | None],
+    ) -> Iterator[data.Transaction]:
         for x in xs:
             if not x:
                 continue
 
             yield x
 
-    def _add_posting(self, x: Directive) -> Directive:
+    def _add_posting(self, x: data.Transaction) -> data.Transaction:
         if not isinstance(x, data.Transaction):
             return x
 
@@ -162,11 +176,14 @@ class Importer(ImporterProtocol):
 
         return x
 
-    def _add_postings(self, xs: Iterable[Directive]) -> Iterator[Directive]:
+    def _add_postings(
+            self,
+            xs: Iterable[data.Transaction],
+    ) -> Iterator[data.Transaction]:
         for x in xs:
             yield self._add_posting(x)
 
-    def extract(self, f: File) -> list[Directive]:
+    def extract(self, f: File) -> list[data.Transaction]:
         # TODO: print proposed data.Balance() record at end?
         # It should be manually checked anyway, so probably a bad idea to emit
         return list(self._add_postings(self._filter(self._extract(f.name))))

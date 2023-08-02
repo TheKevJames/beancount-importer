@@ -1,0 +1,53 @@
+repository:
+  name: beancount-importer
+  description: various importers for beancount ledgers
+  topics: beancount, ledger, accounting
+  private: false
+
+  has_issues: true
+  has_projects: true
+  has_wiki: true
+  has_downloads: false
+
+  default_branch: master
+  delete_branch_on_merge: true
+
+  allow_merge_commit: false
+  allow_rebase_merge: true
+  allow_squash_merge: true
+
+  enable_automated_security_fixes: true
+  enable_vulnerability_alerts: true
+
+labels:
+  - name: bug
+    color: '#fc2929'
+  - name: feature
+    color: '#84b6eb'
+    oldname: enhancement
+  - name: task
+    color: '#d93f0b'
+
+  - name: help wanted
+    color: '#159818'
+  - name: low-priority
+    color: '#fbca04'
+  - name: question
+    color: '#cc317c'
+
+  - name: triage
+    color: '#ededed'
+  - name: backlog
+    color: '#ededed'
+  - name: in-progress
+    color: '#0052cc'
+  - name: in-review
+    color: '#5319e7'
+  - name: blocked
+    color: '#dbe19f'
+
+  - name: automerge
+    color: '#d913a6'
+
+branches:
+  - name: master

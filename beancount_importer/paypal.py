@@ -4,6 +4,7 @@ import re
 from collections.abc import Iterable
 from collections.abc import Iterator
 from typing import Any
+from typing import cast
 
 import titlecase
 from beancount.core import amount
@@ -20,15 +21,17 @@ MetaTuple = tuple[datetime.datetime, dict[str, int | str], str, str,
 
 
 class PaypalImporter(Importer):
+    # TODO: refactor to reuse some base class stuff
+    # pylint: disable=abstract-method
     _regex_fname = re.compile(r'Download.CSV')
 
     @staticmethod
     def _get_date(row: dict[str, Any]) -> str:
         # TODO: wtf
-        value = row.get('\ufeff"Date"')
+        value: str | None = row.get('\ufeff"Date"')
         if value is not None:
             return value
-        return row['Date']
+        return cast(str, row['Date'])
 
     def _extract(self, fname: str) -> Iterator[MetaTuple]:
         with open(fname, encoding='utf-8') as f:
@@ -42,7 +45,7 @@ class PaypalImporter(Importer):
                 amt = amount.Amount(D(row['Amount']), row['Currency'])
 
                 meta = data.new_metadata(fname, index)
-                yield (date, meta, name, kind, amt)
+                yield cast(MetaTuple, (date, meta, name, kind, amt))
 
         # TODO: append data.Balance() record
 
@@ -56,27 +59,27 @@ class PaypalImporter(Importer):
             return True
         if name == 'PayPal' and kind == 'Reversal of General Account Hold':
             return True
-        if name == transaction[2] and kind == 'General Authorization':
+        if (name == transaction[2] and kind == 'General Authorization'
+                and amt == transaction[4]):
             return True
 
         return False
 
     def _group(self, xs: Iterable[MetaTuple]) -> Iterator[list[MetaTuple]]:
-        data: list[MetaTuple] = []
+        batch: list[MetaTuple] = []
         for x in xs:
-            date, meta, name, kind, amt = x
-            if data:
-                if self._is_conversion(data[0], x):
-                    data.append(x)
+            if batch:
+                if self._is_conversion(batch[0], x):
+                    batch.append(x)
                     continue
 
-                yield data
-                data = []
+                yield batch
+                batch = []
 
-            data.append(x)
+            batch.append(x)
 
-        if data:
-            yield data
+        if batch:
+            yield batch
 
     def _consolidate_conversions(self,
                                  xs: list[MetaTuple]) -> list[data.Posting]:
@@ -90,14 +93,14 @@ class PaypalImporter(Importer):
         for x in xs:
             if x[4] == expense[4] or x[4] == -expense[4]:
                 continue
-            if expense[4].number < 0 and x[4].number >= 0:
+            if expense[4].number < 0 <= x[4].number:
                 continue
-            if expense[4].number >= 0 and x[4].number < 0:
+            if expense[4].number >= 0 > x[4].number:
                 continue
             cost = x[4]
             break
         else:
-            raise ValueError('could not parse conversion postings for %s', xs)
+            raise ValueError(f'could not parse conversion postings for {xs}')
 
         # At this point, f"{-expense[4]} @@ {-cost}" would be correct.
         # TODO: emit @@ Postings directly.
@@ -129,6 +132,5 @@ class PaypalImporter(Importer):
                 postings=postings,
             )
 
-    # TODO: refactor to reuse some base class stuff
     def extract(self, f: File) -> list[data.Transaction]:
         return list(self._merge(self._group(self._extract(f.name))))

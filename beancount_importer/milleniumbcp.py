@@ -34,11 +34,14 @@ class MilleniumBCPImporter(Importer):
     def _extract(self, fname: str) -> Iterator[None]:
         wb = openpyxl.load_workbook(fname)
         ws = wb.active
+        if not ws:
+            return
 
         header: tuple[str, str, str, str, str] | None = None
         records: list[tuple[datetime.datetime, datetime.datetime, str, float,
                             float]] = []
-        for row in ws.iter_rows(values_only=True):
+        for row in ws.iter_rows(  # type: ignore[attr-defined]
+                values_only=True):
             if row[0] == 'Transaction record date ':
                 header = row
                 continue
@@ -47,6 +50,8 @@ class MilleniumBCPImporter(Importer):
             if isinstance(row[0], str):
                 break
             records.append(row)
+        if not header:
+            raise ValueError('malformed workbook')
 
         rows = [dict(zip(header, x)) for x in records]
         for index, row in enumerate(rows):

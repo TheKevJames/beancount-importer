@@ -3,8 +3,8 @@ import re
 from typing import Any
 
 from beancount.core import data
-from dateutil.parser import parse
 from beancount.ingest.cache import _FileMemo as File
+from dateutil.parser import parse
 
 from .utils import Importer
 

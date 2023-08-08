@@ -1,0 +1,10 @@
+{
+  "extends": ["github>thekevjames/tools:personal"],
+  "rangeStrategy": "widen",
+  "packageRules": [
+    {
+      "depTypeList": ["devDependencies"],
+      "rangeStrategy": "pin",
+    },
+  ],
+}

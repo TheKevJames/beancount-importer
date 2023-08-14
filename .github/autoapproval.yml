@@ -1,5 +1,5 @@
 from_owner:
-  - pre-commit-ci
+  - pre-commit-ci[bot]
   - renovate[bot]
 
 required_labels: []

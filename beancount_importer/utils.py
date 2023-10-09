@@ -38,11 +38,12 @@ class AccountPattern:
             account: data.Account,
             pattern: str,
             *,
-            flags: int = 0,
+            flag: data.Flag | None = None,
             target: AccountPatternTarget = AccountPatternTarget.EITHER,
     ) -> None:
         self.account = account
-        self.pattern = re.compile(pattern, flags)
+        self.flag = flag
+        self.pattern = re.compile(pattern)
         self.target = target
 
     def matches(self, tx: data.Transaction) -> bool:
@@ -59,7 +60,7 @@ class AccountPattern:
 
     def posting(self, tx: data.Transaction) -> data.Posting:
         amt = -tx.postings[0].units
-        return data.Posting(self.account, amt, None, None, None, None)
+        return data.Posting(self.account, amt, None, None, self.flag, None)
 
 
 # TODO: identifier.IdentifyMixin ?

@@ -19,9 +19,9 @@ class ActivoBankImporter(Importer):
             row: dict[str, Any],
             meta: data.Meta,
     ) -> data.Transaction | None:
-        date = row['Value Date']
-        narration = row['Description']
-        amt = self._amount(str(row['Value']))
+        date = row.get('Value Date', row['Data Valor'])
+        narration = row.get('Description', row['Descrição'])
+        amt = self._amount(str(row.get('Value', row['Valor'])))
 
         return self._transaction(
             meta=meta,
@@ -43,7 +43,7 @@ class ActivoBankImporter(Importer):
                             float]] = []
         for row in ws.iter_rows(  # type: ignore[attr-defined]
                 values_only=True):
-            if row[0] == 'Launch Date':
+            if row[0] in {'Launch Date', 'Data Lanc.'}:
                 header = row
                 continue
             if not header:

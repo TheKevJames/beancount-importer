@@ -29,6 +29,10 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.poetry.source]]
+name = "pypi"
+priority = "primary"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

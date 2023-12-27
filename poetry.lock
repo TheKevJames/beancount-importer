@@ -892,4 +892,4 @@ test = ["pytest (>=5.3.5)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "f1593c1092e0ac3973ffced3b9fe79a636d92900b7245a475c7f9d93da7a947d"
+content-hash = "95fefbcf1db69d6d935ca3b28d8e18e61ff209cbe85fde68c881aac6ea496879"

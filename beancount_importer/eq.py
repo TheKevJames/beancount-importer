@@ -17,7 +17,7 @@ class EQImporter(Importer):
 
     def _parse_amount(self, row: dict[str, Any]) -> str:
         if row.get('Withdrawals'):
-            return f'-{row["Withdrawals"].strip("$")}'
+            return f'-{row["Withdrawals"].strip("- $")}'
         return cast(str, row['Deposits'].strip('$'))
 
     def _extract_from_row(

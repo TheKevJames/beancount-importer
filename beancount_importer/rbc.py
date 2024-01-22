@@ -27,8 +27,7 @@ class RBCImporter(Importer):
             return None
 
         date = parse(row['Transaction Date']).date()
-        payee: str | None = row['Description 2'].strip()
-        payee = payee if payee else None
+        payee: str | None = row['Description 2'].strip() or None
         narration = row['Description 1']
         amt = self._amount(row['CAD$'])
 

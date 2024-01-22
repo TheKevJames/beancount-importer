@@ -52,11 +52,18 @@ class AccountPattern:
         if self.target == AccountPatternTarget.PAYEE:
             return bool(tx.payee is not None and self.pattern.search(tx.payee))
         if self.target == AccountPatternTarget.BOTH:
-            return bool(self.pattern.search(
-                f'{tx.payee or ""};{tx.narration}'))
-        return bool(self.pattern.search(tx.narration)
-                    or (tx.payee is not None
-                        and self.pattern.search(tx.payee)))
+            return bool(
+                self.pattern.search(
+                    f'{tx.payee or ""};{tx.narration}',
+                ),
+            )
+        return bool(
+            self.pattern.search(tx.narration)
+            or (
+                tx.payee is not None
+                and self.pattern.search(tx.payee)
+            ),
+        )
 
     def posting(self, tx: data.Transaction) -> data.Posting:
         amt = -tx.postings[0].units

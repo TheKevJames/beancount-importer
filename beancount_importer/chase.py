@@ -10,19 +10,27 @@ from .utils import Importer
 class ChaseImporter(Importer):
     _default_currency = 'USD'
     _require_lastfour = True
-    _regex_fname = re.compile(r'Chase(\d{4})_Activity([\d]+_)*[\d]+.CSV',
-                              re.IGNORECASE)
+    _regex_fname = re.compile(
+        r'Chase(\d{4})_Activity([\d]+_)*[\d]+.CSV',
+        re.IGNORECASE,
+    )
 
     regex_desc_full = re.compile(
-        (r'ORIG CO NAME:(.+?)\s*ORIG ID:.*DESC DATE:.*CO ENTRY DESCR:(.+?)\s*'
-         r'SEC:.*TRACE#:.*EED:.*'),
-        re.IGNORECASE)
+        (
+            r'ORIG CO NAME:(.+?)\s*ORIG ID:.*DESC DATE:.*CO ENTRY '
+            r'DESCR:(.+?)\s*SEC:.*TRACE#:.*EED:.*'
+        ),
+        re.IGNORECASE,
+    )
     regex_desc_generic = re.compile(
-        r'(.+?)\s+(PPD|WEB) ID: \d+', re.IGNORECASE)
+        r'(.+?)\s+(PPD|WEB) ID: \d+', re.IGNORECASE,
+    )
     regex_desc_inbound_tx = re.compile(
-        r'Online Transfer \d+ from (.+?)\s*transaction #', re.IGNORECASE)
+        r'Online Transfer \d+ from (.+?)\s*transaction #', re.IGNORECASE,
+    )
     regex_desc_outbound_tx = re.compile(
-        r'Online Transfer \d+ to (.+?)\s*transaction #', re.IGNORECASE)
+        r'Online Transfer \d+ to (.+?)\s*transaction #', re.IGNORECASE,
+    )
 
     def _parse_description(self, description: str) -> tuple[str | None, str]:
         match = self.regex_desc_full.search(description)

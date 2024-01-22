@@ -51,7 +51,8 @@ class EQImporter(Importer):
             body,
             fix_element_in_multiple_rows=True,
             fix_element_in_multiple_cols=True,
-            as_text=True)
+            as_text=True,
+        )
 
         rows = [dict(zip(table[0], x)) for x in table[1:]]
         for index, row in enumerate(rows):

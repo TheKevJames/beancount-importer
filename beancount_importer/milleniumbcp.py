@@ -38,10 +38,15 @@ class MilleniumBCPImporter(Importer):
             return
 
         header: tuple[str, str, str, str, str] | None = None
-        records: list[tuple[datetime.datetime, datetime.datetime, str, float,
-                            float]] = []
+        records: list[
+            tuple[
+                datetime.datetime, datetime.datetime, str, float,
+                float,
+            ]
+        ] = []
         for row in ws.iter_rows(  # type: ignore[attr-defined]
-                values_only=True):
+                values_only=True,
+        ):
             if row[0] == 'Transaction record date ':
                 header = row
                 continue

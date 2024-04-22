@@ -196,7 +196,7 @@ repos:
 
 # docker
   - repo: https://github.com/AleksaC/hadolint-py
-    rev: v2.12.0.3
+    rev: v2.12.1-beta
     hooks:
       - id: hadolint
         args:
@@ -227,7 +227,7 @@ repos:
 
 # terraform
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.88.4
+    rev: v1.89.0
     hooks:
       - id: terraform_fmt
       - id: terraform_validate

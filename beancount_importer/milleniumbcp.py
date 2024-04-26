@@ -2,11 +2,18 @@ import datetime
 import re
 from collections.abc import Iterator
 from typing import Any
+from typing import cast
+from typing import TypeAlias
 
 import openpyxl
 from beancount.core import data
+from openpyxl.worksheet.worksheet import Worksheet
 
 from .utils import Importer
+
+
+Header: TypeAlias = tuple[str, str, str, str, str]
+Row: TypeAlias = tuple[datetime.datetime, datetime.datetime, str, float, float]
 
 
 class MilleniumBCPImporter(Importer):
@@ -32,29 +39,24 @@ class MilleniumBCPImporter(Importer):
         )
 
     def _extract(self, fname: str) -> Iterator[None]:
+        # TODO(perf): check out
+        # https://github.com/ericgazoni/openpyxl/blob/c55988e4904d4337ce4c35ab8b7dc305bca9de23/doc/source/optimized.rst#L15
         wb = openpyxl.load_workbook(fname)
-        ws = wb.active
+        ws = cast(Worksheet, wb.active)
         if not ws:
             return
 
-        header: tuple[str, str, str, str, str] | None = None
-        records: list[
-            tuple[
-                datetime.datetime, datetime.datetime, str, float,
-                float,
-            ]
-        ] = []
-        for row in ws.iter_rows(  # type: ignore[attr-defined]
-                values_only=True,
-        ):
-            if row[0] == 'Transaction record date ':
-                header = row
+        header: Header | None = None
+        records: list[Row] = []
+        for raw in ws.iter_rows(values_only=True):
+            if raw[0] == 'Transaction record date ':
+                header = raw  # type: ignore[assignment]
                 continue
             if not header:
                 continue
-            if isinstance(row[0], str):
+            if isinstance(raw[0], str):
                 break
-            records.append(row)
+            records.append(raw)  # type: ignore[arg-type]
         if not header:
             raise ValueError('malformed workbook')
 

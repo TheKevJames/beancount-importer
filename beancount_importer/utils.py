@@ -98,10 +98,11 @@ class Importer(ImporterProtocol):  # type: ignore[misc]
     def file_date(self, f: File) -> datetime.datetime | None:
         try:
             value = max(x.date for x in self.extract(f))
-            return cast(datetime.datetime, value)
         except ValueError:
             # why are you filing this, anyway?
             return None
+
+        return cast(datetime.datetime, value)
 
     def identify(self, f: File) -> bool:
         match = self._regex_fname.match(os.path.basename(f.name))

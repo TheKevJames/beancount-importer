@@ -739,13 +739,13 @@ files = [
 
 [[package]]
 name = "py-pdf-parser"
-version = "0.12.0"
+version = "0.13.0"
 description = "A tool to help extracting information from structured PDFs."
 optional = false
 python-versions = "*"
 files = [
-    {file = "py-pdf-parser-0.12.0.tar.gz", hash = "sha256:9cc126cd0573d4b478a261f2c61beb8c15c3410136dd2eb64f4c3165e3275e18"},
-    {file = "py_pdf_parser-0.12.0-py3-none-any.whl", hash = "sha256:ca88edb445c922bbed3e7cd754ae07ffed5755944a69be12965ca74116e2c4e0"},
+    {file = "py-pdf-parser-0.13.0.tar.gz", hash = "sha256:76cb315a06ccad61532b86fba017b317bee4f4d9944db75b4040fd7b25501a55"},
+    {file = "py_pdf_parser-0.13.0-py3-none-any.whl", hash = "sha256:fdf1ccf8076137f4e5f7b001135f0455db640f976c1e4819b860783c833a8b23"},
 ]
 
 [package.dependencies]
@@ -968,4 +968,4 @@ test = ["pytest (>=5.3.5)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "95fefbcf1db69d6d935ca3b28d8e18e61ff209cbe85fde68c881aac6ea496879"
+content-hash = "5b8a5ec369d87ba34515488bdc37c0ed528d11886165ccaa171e42c5417ebf13"

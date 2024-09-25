@@ -44,7 +44,7 @@ repos:
       - id: name-tests-test
       - id: requirements-txt-fixer
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.2.7
+    rev: v3.3.1
     hooks:
     # TODO: pylint-import-modules support for pylint v3 (or alternative linter)
       - id: pylint
@@ -53,6 +53,7 @@ repos:
           - --max-complexity=10
           - --max-line-length=79
           - --max-module-lines=500
+          - --max-positional-arguments=10
           - --max-args=10
           - --score=n
           # TODO: narrow these down
@@ -205,6 +206,7 @@ repos:
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.29.2
     hooks:
+      - id: check-circle-ci
       - id: check-github-workflows
       - id: check-renovate
         additional_dependencies:
@@ -250,10 +252,6 @@ repos:
       - id: terraform_validate
 
 # shell
-  - repo: https://github.com/lovesegfault/beautysh
-    rev: v6.2.1
-    hooks:
-      - id: beautysh
   - repo: https://github.com/openstack/bashate
     rev: 2.1.1
     hooks:

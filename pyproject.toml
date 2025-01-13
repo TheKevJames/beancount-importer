@@ -1,24 +1,33 @@
-[tool.poetry]
+[project]
 name = "beancount-importer"
 version = "0.1.0"
 description = "Various beancount importers"
+requires-python = ">=3.11,<4.0"
+license = { text = "MIT" }
 readme = "README.rst"
 
-repository = "https://github.com/TheKevJames/beancount-importer"
-authors = ["Kevin James <beancount-importer@thekev.in>"]
-license = "MIT"
+authors = [
+    { name = "Kevin James", email = "beancount-importer@thekev.in>" },
+]
 
+dependencies = [
+    "beancount>=2.0.0,<3.0.0,!=2.3.6",  # TODO: 2.3.6 -> pdfminer2==2015.*, incompatible with py-pdf-parser's dep on pdfminer.six
+    "openpyxl>=3.0.0,<4.0.0",
+    "py-pdf-parser>=0.10.0,<0.14.0",
+    "python-dateutil>=2.0.0,<3.0.0",
+    "titlecase>=2.0.0,<3.0.0",
+]
+
+[project.urls]
+repository = "https://github.com/TheKevJames/beancount-importer"
+
+[tool.poetry]
 packages = [
     { include = "beancount_importer" },
 ]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
-beancount = ">=2.0.0,<3.0.0,!=2.3.6"  # TODO: 2.3.6 -> pdfminer2==2015.*, incompatible with py-pdf-parser's dep on pdfminer.six
-openpyxl = ">=3.0.0,<4.0.0"
-py-pdf-parser = ">=0.10.0, <0.14.0"
-python-dateutil = ">=2.0.0,<3.0.0"
-titlecase = ">=2.0.0,<3.0.0"
 
 [[tool.mypy.overrides]]
 module = [

@@ -11,7 +11,7 @@ authors = [
 ]
 
 dependencies = [
-    "beancount>=2.0.0,<3.0.0,!=2.3.6",  # TODO: 2.3.6 -> pdfminer2==2015.*, incompatible with py-pdf-parser's dep on pdfminer.six
+    "beancount>=2.0.0,<3.1.1,!=2.3.6",  # TODO: 2.3.6 -> pdfminer2==2015.*, incompatible with py-pdf-parser's dep on pdfminer.six
     "openpyxl>=3.0.0,<4.0.0",
     "py-pdf-parser>=0.10.0,<0.14.0",
     "python-dateutil>=2.0.0,<3.0.0",

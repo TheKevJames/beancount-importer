@@ -3,20 +3,19 @@ import re
 from typing import Any
 
 from beancount.core import data
-from beancount.ingest.cache import _FileMemo as File
 from dateutil.parser import parse
 
 from .utils import Importer
 
 
-class RBCImporter(Importer):
+class RbcImporter(Importer):
     _default_currency = 'CAD'
     _require_lastfour = True
     _regex_fname = re.compile(r'csv\d+\.csv')
 
-    def identify(self, f: File) -> bool:
+    def identify(self, fname: str) -> bool:
         # TODO: _require_lastfour but not in filename? Mock the filename?
-        return bool(self._regex_fname.match(os.path.basename(f.name)))
+        return bool(self._regex_fname.match(os.path.basename(fname)))
 
     def _extract_from_row(
             self,
@@ -37,6 +36,6 @@ class RBCImporter(Importer):
             narration=narration,
             payee=payee,
             postings=[
-                self._posting(self.account, amt),
+                self._posting(self.account_name, amt),
             ],
         )

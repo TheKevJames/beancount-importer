@@ -7,14 +7,14 @@ from collections.abc import Iterable
 from collections.abc import Iterator
 from typing import Any
 from typing import cast
+from typing import Self
 
 import titlecase
 from beancount.core import amount
 from beancount.core import data
 from beancount.core import number
 from beancount.core import position
-from beancount.ingest.cache import _FileMemo as File
-from beancount.ingest.importer import ImporterProtocol
+from beangulp import importer  # type: ignore[import-untyped]
 
 
 # TODO: until the beancount.core.data type hints are working, this isn't very
@@ -25,11 +25,11 @@ from beancount.ingest.importer import ImporterProtocol
 #              | data.Price | data.Query | data.Transaction)
 
 
-class AccountPatternTarget(int, enum.Enum):
-    BOTH = enum.auto()
-    EITHER = enum.auto()
-    NARRATION = enum.auto()
-    PAYEE = enum.auto()
+class AccountPatternTarget(str, enum.Enum):
+    BOTH = 'both'
+    EITHER = 'either'
+    NARRATION = 'narration'
+    PAYEE = 'payee'
 
 
 class AccountPattern:
@@ -45,6 +45,19 @@ class AccountPattern:
         self.flag = flag
         self.pattern = re.compile(pattern)
         self.target = target
+
+    @classmethod
+    def from_config(cls, raw: list[str]) -> Self:
+        kind, account, pattern, *extra = raw
+        target = AccountPatternTarget(kind)
+        flag = extra[0] if extra else None
+        return cls(account, pattern, flag=flag, target=target)
+
+    def __repr__(self) -> str:
+        return (
+            f'AccountPattern({self.account}, {self.pattern}, {self.flag}, '
+            f'{self.target}'
+        )
 
     def matches(self, tx: data.Transaction) -> bool:
         if self.target == AccountPatternTarget.NARRATION:
@@ -70,21 +83,20 @@ class AccountPattern:
         return data.Posting(self.account, amt, None, None, self.flag, None)
 
 
-# TODO: identifier.IdentifyMixin ?
-class Importer(ImporterProtocol):  # type: ignore[misc]
+class Importer(importer.Importer):  # type: ignore[misc]
     _default_currency: data.Currency | None = None
     _require_lastfour: bool = False
     _regex_fname: re.Pattern[str]
 
     def __init__(
             self,
-            account: data.Account,
+            account_name: data.Account,
             *,
             account_patterns: list[AccountPattern] | None = None,
             currency: data.Currency | None = None,
             lastfour: str | None = None,
     ) -> None:
-        self.account = account
+        self.account_name = str(account_name)
         self.account_patterns = account_patterns or []
         self.currency = currency or self._default_currency
         self.lastfour = lastfour
@@ -92,26 +104,26 @@ class Importer(ImporterProtocol):  # type: ignore[misc]
         if self._require_lastfour and self.lastfour is None:
             raise ValueError('lastfour="xxxx" must be provided')
 
-    def file_account(self, _f: File) -> str:
-        return str(self.account)
+    def account(self, _fname: str) -> str:
+        return self.account_name
 
-    def file_date(self, f: File) -> datetime.datetime | None:
+    def date(self, fname: str) -> datetime.datetime | None:
         try:
-            value = max(x.date for x in self.extract(f))
+            value = max(x.date for x in self.extract(fname))
         except ValueError:
             # why are you filing this, anyway?
             return None
 
         return cast(datetime.datetime, value)
 
-    def identify(self, f: File) -> bool:
-        match = self._regex_fname.match(os.path.basename(f.name))
+    def identify(self, fname: str) -> bool:
+        match = self._regex_fname.match(os.path.basename(fname))
         if not match:
             return False
         return self.lastfour is None or self.lastfour == match.group(1)
 
     def name(self) -> str:
-        return f'{super().name()}.{self.account}'
+        return f'{super().name()}.{self.account_name}'
 
     def _amount(
             self,
@@ -132,7 +144,7 @@ class Importer(ImporterProtocol):  # type: ignore[misc]
         return data.Transaction(
             meta=meta,
             date=date,
-            flag=self.FLAG,
+            flag=self.FLAG,  # TODO: beancount.core.flags
             payee=titlecase.titlecase(payee.strip()) if payee else None,
             narration=titlecase.titlecase(narration.strip()),
             tags=data.EMPTY_SET,
@@ -192,7 +204,7 @@ class Importer(ImporterProtocol):  # type: ignore[misc]
         for x in xs:
             yield self._add_posting(x)
 
-    def extract(self, f: File) -> list[data.Transaction]:
+    def extract(self, fname: str) -> list[data.Transaction]:
         # TODO: print proposed data.Balance() record at end?
         # It should be manually checked anyway, so probably a bad idea to emit
-        return list(self._add_postings(self._filter(self._extract(f.name))))
+        return list(self._add_postings(self._filter(self._extract(fname))))

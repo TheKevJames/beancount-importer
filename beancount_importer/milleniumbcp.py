@@ -16,7 +16,7 @@ Header: TypeAlias = tuple[str, str, str, str, str]
 Row: TypeAlias = tuple[datetime.datetime, datetime.datetime, str, float, float]
 
 
-class MilleniumBCPImporter(Importer):
+class MilleniumbcpImporter(Importer):
     _default_currency = 'EUR'
     _regex_fname = re.compile(r'^MOVS_\d_\d+\.xlsx$')
 
@@ -34,7 +34,7 @@ class MilleniumBCPImporter(Importer):
             date=date.date(),
             narration=narration,
             postings=[
-                self._posting(self.account, amt),
+                self._posting(self.account_name, amt),
             ],
         )
 

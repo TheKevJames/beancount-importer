@@ -10,7 +10,6 @@ import titlecase
 from beancount.core import amount
 from beancount.core import data
 from beancount.core.number import D
-from beancount.ingest.cache import _FileMemo as File
 from dateutil.parser import parse
 
 from .utils import Importer
@@ -118,7 +117,7 @@ class PaypalImporter(Importer):
         category = 'Expenses:Unknown'
         return [
             self._posting(category, -expense[4]),
-            self._posting(self.account, cost),
+            self._posting(self.account_name, cost),
             self._posting(conv, None),
         ]
 
@@ -138,5 +137,5 @@ class PaypalImporter(Importer):
                 postings=postings,
             )
 
-    def extract(self, f: File) -> list[data.Transaction]:
-        return list(self._merge(self._group(self._extract(f.name))))
+    def extract(self, fname: str) -> list[data.Transaction]:
+        return list(self._merge(self._group(self._extract(fname))))

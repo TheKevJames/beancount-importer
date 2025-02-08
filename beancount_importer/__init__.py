@@ -1,27 +1,27 @@
-import importlib
+import importlib.metadata
 
-from .activobank import ActivoBankImporter
+from .activobank import ActivobankImporter
 from .amex import AmexImporter
 from .brim import BrimImporter
 from .chase import ChaseImporter
-from .eq import EQImporter
-from .milleniumbcp import MilleniumBCPImporter
+from .eq import EqImporter
+from .milleniumbcp import MilleniumbcpImporter
 from .paypal import PaypalImporter
-from .rbc import RBCImporter
+from .rbc import RbcImporter
 from .revolut import RevolutImporter
 from .tangerine import TangerineImporter
 
 
 __version__ = importlib.metadata.version('beancount-importer')
 __all__ = [
-    'ActivoBankImporter',
+    'ActivobankImporter',
     'AmexImporter',
     'BrimImporter',
     'ChaseImporter',
-    'EQImporter',
-    'MilleniumBCPImporter',
+    'EqImporter',
+    'MilleniumbcpImporter',
     'PaypalImporter',
-    'RBCImporter',
+    'RbcImporter',
     'RevolutImporter',
     'TangerineImporter',
 ]

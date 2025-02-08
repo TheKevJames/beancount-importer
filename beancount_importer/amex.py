@@ -27,6 +27,6 @@ class AmexImporter(Importer):
             date=date,
             narration=narration,
             postings=[
-                self._posting(self.account, amt),
+                self._posting(self.account_name, amt),
             ],
         )

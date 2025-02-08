@@ -30,6 +30,6 @@ class TangerineImporter(Importer):
             narration=narration,
             payee=payee,
             postings=[
-                self._posting(self.account, amt),
+                self._posting(self.account_name, amt),
             ],
         )

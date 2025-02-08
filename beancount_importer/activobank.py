@@ -16,7 +16,7 @@ Header: TypeAlias = tuple[str, str, str, str, str]
 Row: TypeAlias = tuple[datetime.datetime, datetime.datetime, str, float, float]
 
 
-class ActivoBankImporter(Importer):
+class ActivobankImporter(Importer):
     _default_currency = 'EUR'
     _require_lastfour = True
     _regex_fname = re.compile(r'^mov\d+(\d{4})-\d+-\d+.xlsx$')
@@ -35,7 +35,7 @@ class ActivoBankImporter(Importer):
             date=date.date(),
             narration=narration,
             postings=[
-                self._posting(self.account, amt),
+                self._posting(self.account_name, amt),
             ],
         )
 

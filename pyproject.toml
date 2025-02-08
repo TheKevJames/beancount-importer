@@ -11,7 +11,8 @@ authors = [
 ]
 
 dependencies = [
-    "beancount>=2.0.0,<3.0.0,!=2.3.6",  # TODO: 2.3.6 -> pdfminer2==2015.*, incompatible with py-pdf-parser's dep on pdfminer.six
+    "beancount>=3.0.0,<4.0.0",
+    "beangulp>=0.2.0,<0.3.0",
     "openpyxl>=3.0.0,<4.0.0",
     "py-pdf-parser>=0.10.0,<0.14.0",
     "python-dateutil>=2.0.0,<3.0.0",
@@ -25,11 +26,11 @@ repository = "https://github.com/TheKevJames/beancount-importer"
 requires-poetry = ">=2.0"
 package-mode = true
 packages = [
-    { include = "beancount_importer" },
+    { include = "beancount_importer", format = ["sdist", "wheel"] },
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<4.0"
+[tool.poetry.scripts]
+bean-import = "beancount_importer.cli:run"
 
 [[tool.mypy.overrides]]
 module = [

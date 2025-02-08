@@ -11,7 +11,7 @@ from dateutil.parser import parse
 from .utils import Importer
 
 
-class EQImporter(Importer):
+class EqImporter(Importer):
     _default_currency = 'CAD'
     _regex_fname = re.compile(r'(\d+) .* Statement.pdf')
 
@@ -36,7 +36,7 @@ class EQImporter(Importer):
             date=date,
             narration=narration,
             postings=[
-                self._posting(self.account, amt),
+                self._posting(self.account_name, amt),
             ],
         )
 

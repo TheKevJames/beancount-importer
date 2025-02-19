@@ -8,6 +8,7 @@ from .eq import EqImporter
 from .milleniumbcp import MilleniumbcpImporter
 from .paypal import PaypalImporter
 from .rbc import RbcImporter
+from .remitbee import RemitbeeImporter
 from .revolut import RevolutImporter
 from .tangerine import TangerineImporter
 
@@ -22,6 +23,7 @@ __all__ = [
     'MilleniumbcpImporter',
     'PaypalImporter',
     'RbcImporter',
+    'RemitbeeImporter',
     'RevolutImporter',
     'TangerineImporter',
 ]

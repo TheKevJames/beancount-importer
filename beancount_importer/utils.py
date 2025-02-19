@@ -194,6 +194,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
             if account_pattern.matches(x):
                 x.postings.append(account_pattern.posting(x))
                 break
+        # TODO: else, ! Expenses:Unkown?
 
         return x
 

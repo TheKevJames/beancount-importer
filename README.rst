@@ -78,11 +78,17 @@ pattern list and apply only to this account.
 
     # Reconcile issues, fix parsing, adjust patterns, etc
     $ bean-import extract -xe index.beancount ~/Downloads
-    $ vim
+    $ vim config.toml
     $ # ...repeat until no errors...
 
     # Actually import the new data
-    $ bean-import extract -e index.beancount -o my-ledger.beancount ~/Downloads
+    # Note that all new data will be emitted. If your ledger files are split by
+    account, the easiest way to manage this is to paste into files manually:
+    $ bean-import extract -e index.beancount ~/Downloads | pbcopy
+    $ vim relevant-account-file.beancount  # paste
+    # If you instead use a single ledger file or a new file for each
+    # reconciliation pass, you can use the `-o outputfile` flag to the
+    # `extract` # command.
 
     # Archive parsed statements
     $ bean-import archive -o docs ~/Downloads

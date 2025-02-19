@@ -12,6 +12,7 @@ from typing import Self
 import titlecase
 from beancount.core import amount
 from beancount.core import data
+from beancount.core import flags
 from beancount.core import number
 from beancount.core import position
 from beangulp import importer  # type: ignore[import-untyped]
@@ -145,7 +146,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
         return data.Transaction(
             meta=meta,
             date=date,
-            flag=self.FLAG,  # TODO: beancount.core.flags
+            flag=flags.FLAG_OKAY,
             payee=titlecase.titlecase(payee.strip()) if payee else None,
             narration=titlecase.titlecase(narration.strip()),
             tags=data.EMPTY_SET,

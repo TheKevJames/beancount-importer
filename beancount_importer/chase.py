@@ -11,7 +11,7 @@ class ChaseImporter(Importer):
     _default_currency = 'USD'
     _require_lastfour = True
     _regex_fname = re.compile(
-        r'Chase(\d{4})_Activity([\d]+_)*[\d]+.CSV',
+        r'Chase(\d{4})_Activity[\d_]+.CSV',
         re.IGNORECASE,
     )
 
@@ -52,7 +52,8 @@ class ChaseImporter(Importer):
             row: dict[str, Any],
             meta: data.Meta,
     ) -> data.Transaction | None:
-        date = parse(row['Posting Date']).date()
+        post_date = row.get('Posting Date') or row['Post Date']
+        date = parse(post_date).date()
         payee, narration = self._parse_description(row['Description'])
         amt = self._amount(row['Amount'])
         # TODO: move to base class

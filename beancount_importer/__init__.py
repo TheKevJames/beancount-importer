@@ -11,6 +11,7 @@ from .rbc import RbcImporter
 from .remitbee import RemitbeeImporter
 from .revolut import RevolutImporter
 from .tangerine import TangerineImporter
+from .wealthsimple import WealthsimpleImporter
 
 
 __version__ = importlib.metadata.version('beancount-importer')
@@ -26,4 +27,5 @@ __all__ = [
     'RemitbeeImporter',
     'RevolutImporter',
     'TangerineImporter',
+    'WealthsimpleImporter',
 ]

@@ -109,7 +109,8 @@ class Importer(importer.Importer):  # type: ignore[misc]
 
     def date(self, fname: str) -> datetime.datetime | None:
         try:
-            value = max(x.date for x in self.extract(fname))
+            # TODO: pass in existing somehow
+            value = max(x.date for x in self.extract(fname, []))
         except ValueError:
             # why are you filing this, anyway?
             return None
@@ -205,7 +206,11 @@ class Importer(importer.Importer):  # type: ignore[misc]
         for x in xs:
             yield self._add_posting(x)
 
-    def extract(self, fname: str) -> list[data.Transaction]:
+    def extract(
+            self,
+            fname: str,
+            _existing: list[data.Transaction],
+    ) -> list[data.Transaction]:
         # TODO: print proposed data.Balance() record at end?
         # It should be manually checked anyway, so probably a bad idea to emit
         return list(self._add_postings(self._filter(self._extract(fname))))

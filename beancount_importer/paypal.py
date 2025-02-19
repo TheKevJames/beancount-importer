@@ -137,5 +137,9 @@ class PaypalImporter(Importer):
                 postings=postings,
             )
 
-    def extract(self, fname: str) -> list[data.Transaction]:
+    def extract(
+            self,
+            fname: str,
+            _existing: list[data.Transaction],
+    ) -> list[data.Transaction]:
         return list(self._merge(self._group(self._extract(fname))))

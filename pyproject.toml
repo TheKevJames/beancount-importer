@@ -16,6 +16,7 @@ dependencies = [
     "openpyxl>=3.0.0,<4.0.0",
     "py-pdf-parser>=0.10.0,<0.14.0",
     "python-dateutil>=2.0.0,<3.0.0",
+    "sh>=2.0.0,<3.0.0",
     "titlecase>=2.0.0,<3.0.0",
 ]
 
@@ -35,8 +36,8 @@ bean-import = "beancount_importer.cli:run"
 [[tool.mypy.overrides]]
 module = [
     'beancount.core.*',
-    'beancount.ingest.*',
     'py_pdf_parser.*',
+    'sh.*',
     'titlecase.*',
 ]
 ignore_missing_imports = true

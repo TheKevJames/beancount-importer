@@ -1,4 +1,3 @@
-import os
 import re
 from typing import Any
 
@@ -11,11 +10,13 @@ from .utils import Importer
 class RbcImporter(Importer):
     _default_currency = 'CAD'
     _require_lastfour = True
-    _regex_fname = re.compile(r'csv\d+\.csv')
-
-    def identify(self, fname: str) -> bool:
-        # TODO: _require_lastfour but not in filename? Mock the filename?
-        return bool(self._regex_fname.match(os.path.basename(fname)))
+    # N.B. the csv file contains data for *all* accounts, but beangulp doesn't
+    # like having multiple configured accounts pointing to the same file. To
+    # differentiate, see the `split` command, which breaks apart the merged
+    # file into multiple individual subsets containing only the data for a
+    # single account.
+    # This regex should match the name produced by that method.
+    _regex_fname = re.compile(r'rbc(\d{4}).csv\d+\.csv')
 
     def _extract_from_row(
             self,

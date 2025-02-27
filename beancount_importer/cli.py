@@ -244,27 +244,17 @@ def howto(importer: str) -> None:
             ).splitlines()[-1]
             click.echo(f'{i + 2}. Query date from >={date}')
     elif importer == 'tangerine':
-        click.echo('# Account')
         click.echo(
-            '1. Transactions > Download Transactions '
+            f'{i}. Transactions > Download Transactions '
             '> All Since Last Download / CSV',
         )
-        # TODO: update regex_fname
+        # TODO: update `split` command, maybe rename to `pre-process`? or
+        # download via append.
         click.echo(
-            '2. mv ~/Downloads/finance/Chequing.CSV '
-            '~/Downloads/finance/"xxxx 1234.CSV"',
+            '   Note: for credit cards, you need to repeat this for each '
+            'statement month',
         )
-        click.echo(
-            '3. mv ~/Downloads/finance/Savings.CSV '
-            '~/Downloads/finance/"xxxx 5678.CSV"',
-        )
-        click.echo()
-        click.echo('# Credit Card')
-        click.echo('Note: Import one month at a time')  # TODO: append?
-        click.echo(
-            '1. mv ~/Downloads/finance/"World Mastercard.CSV" '
-            '~/Downloads/finance/"xxxx 1234.CSV"',
-        )
+        i += 1
     elif importer == 'wealthsimple':
         for definition in config[importer]:
             account = definition['account']

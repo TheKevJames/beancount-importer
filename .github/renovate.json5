@@ -1,4 +1,6 @@
 {
-  "extends": ["github>thekevjames/tools:personal"],
-  "rangeStrategy": "widen",
+    "extends": [
+        "github>thekevjames/tools:personal",
+        "github>thekevjames/tools//renovate/version-as-lib.json5",
+    ],
 }

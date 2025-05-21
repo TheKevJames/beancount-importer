@@ -2,7 +2,7 @@
 name = "beancount-importer"
 version = "0.2.1"
 description = "Various beancount importers"
-requires-python = ">=3.11,<4.0"
+requires-python = "==3.13.3"
 license = { text = "MIT" }
 readme = "README.rst"
 

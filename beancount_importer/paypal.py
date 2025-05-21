@@ -34,7 +34,7 @@ class PaypalImporter(Importer):
             return value
         return cast(str, row['Date'])
 
-    def _extract(self, fname: str) -> Iterator[MetaTuple]:
+    def _extractz(self, fname: str) -> Iterator[MetaTuple]:
         with open(fname, encoding='utf-8') as f:
             for index, row in enumerate(csv.DictReader(f)):
                 if row['Status'] != 'Completed':
@@ -98,6 +98,10 @@ class PaypalImporter(Importer):
         for x in xs:
             if x[4] in (expense[4], -expense[4]):
                 continue
+
+            # TODO: handle these checks better
+            assert expense[4].number
+            assert x[4].number
             if expense[4].number < 0 <= x[4].number:
                 continue
             if expense[4].number >= 0 > x[4].number:
@@ -142,4 +146,4 @@ class PaypalImporter(Importer):
             fname: str,
             _existing: list[data.Transaction],
     ) -> list[data.Transaction]:
-        return list(self._merge(self._group(self._extract(fname))))
+        return list(self._merge(self._group(self._extractz(fname))))

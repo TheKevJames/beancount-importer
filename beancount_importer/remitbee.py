@@ -39,6 +39,9 @@ class RemitbeeImporter(Importer):
             send_val, send_cur = row['Amount sent'].split()
             send_amt = self._amount(send_val.replace(',', ''), send_cur)
 
+            # TODO: handle these checks better
+            assert send_amt.number is not None
+            assert recv_amt.number is not None
             # TODO: if we could pass total price instead of price, this posting
             # be more simply and accurately representable as
             # `total_price=to_amt`

@@ -25,7 +25,7 @@ class ActivobankImporter(Importer):
             self,
             row: dict[str, Any],
             meta: data.Meta,
-    ) -> data.Transaction | None:
+    ) -> data.Transaction:
         date = row.get('Value Date', row['Data Valor'])
         narration = row.get('Description', row['Descrição'])
         amt = self._amount(str(row.get('Value', row['Valor'])))
@@ -39,7 +39,7 @@ class ActivobankImporter(Importer):
             ],
         )
 
-    def _extract(self, fname: str) -> Iterator[None]:
+    def _extract(self, fname: str) -> Iterator[data.Transaction]:
         # TODO(perf): check out
         # https://github.com/ericgazoni/openpyxl/blob/c55988e4904d4337ce4c35ab8b7dc305bca9de23/doc/source/optimized.rst#L15
         wb = openpyxl.load_workbook(fname)

@@ -1,5 +1,6 @@
 import csv
 import datetime
+import decimal
 import enum
 import os
 import re
@@ -61,25 +62,26 @@ class AccountPattern:
         )
 
     def matches(self, tx: data.Transaction) -> bool:
-        if self.target == AccountPatternTarget.NARRATION:
+        if self.target == AccountPatternTarget.NARRATION and tx.narration:
             return bool(self.pattern.search(tx.narration))
-        if self.target == AccountPatternTarget.PAYEE:
-            return bool(tx.payee is not None and self.pattern.search(tx.payee))
+        if self.target == AccountPatternTarget.PAYEE and tx.payee:
+            return bool(self.pattern.search(tx.payee))
         if self.target == AccountPatternTarget.BOTH:
             return bool(
-                self.pattern.search(
-                    f'{tx.payee or ""};{tx.narration}',
-                ),
+                self.pattern.search(f'{tx.payee or ""};{tx.narration or ""}'),
             )
-        return bool(
-            self.pattern.search(tx.narration)
-            or (
-                tx.payee is not None
-                and self.pattern.search(tx.payee)
-            ),
-        )
+        if self.target == AccountPatternTarget.EITHER:
+            if tx.narration and self.pattern.search(tx.narration):
+                return True
+            if tx.payee and self.pattern.search(tx.payee):
+                return True
+
+        return False
 
     def posting(self, tx: data.Transaction) -> data.Posting:
+        # TODO: should be inferable somehow if null?
+        assert tx.postings[0].units
+
         amt = -tx.postings[0].units
         return data.Posting(self.account, amt, None, None, self.flag, None)
 
@@ -129,10 +131,14 @@ class Importer(importer.Importer):  # type: ignore[misc]
 
     def _amount(
             self,
-            raw: str,
+            raw: str | decimal.Decimal,
             currency: data.Currency | None = None,
     ) -> amount.Amount:
-        return amount.Amount(number.D(raw), currency or self.currency)
+        currency = currency or self.currency
+        assert currency, 'currency must be set for transaction'
+
+        dec = number.D(raw) if isinstance(raw, str) else raw
+        return amount.Amount(dec, currency)
 
     def _transaction(
             self,
@@ -157,7 +163,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
     def _posting(
             self,
             account: data.Account,
-            units: amount.Amount,
+            units: amount.Amount | None,
             cost: position.Cost | position.CostSpec | None = None,
             price: amount.Amount | None = None,
             flag: data.Flag | None = None,
@@ -189,9 +195,6 @@ class Importer(importer.Importer):  # type: ignore[misc]
             yield x
 
     def _add_posting(self, x: data.Transaction) -> data.Transaction:
-        if not isinstance(x, data.Transaction):
-            return x
-
         for account_pattern in self.account_patterns:
             if account_pattern.matches(x):
                 x.postings.append(account_pattern.posting(x))

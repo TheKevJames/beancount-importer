@@ -757,14 +757,14 @@ files = [
 
 [[package]]
 name = "sh"
-version = "2.2.1"
+version = "2.2.2"
 description = "Python subprocess replacement"
 optional = false
 python-versions = "<4.0,>=3.8.1"
 groups = ["main"]
 files = [
-    {file = "sh-2.2.1-py3-none-any.whl", hash = "sha256:c7369c4ae13729d8ea100b5e93af1a8be528a008433428e38651c9f2b5b5fe2c"},
-    {file = "sh-2.2.1.tar.gz", hash = "sha256:287021ae84183dea49787985e33797dda7fe769e4f95f2c94dff8e245ab4cb00"},
+    {file = "sh-2.2.2-py3-none-any.whl", hash = "sha256:e0b15b4ae8ffcd399bc8ffddcbd770a43c7a70a24b16773fbb34c001ad5d52af"},
+    {file = "sh-2.2.2.tar.gz", hash = "sha256:653227a7c41a284ec5302173fbc044ee817c7bad5e6e4d8d55741b9aeb9eb65b"},
 ]
 
 [[package]]
@@ -836,4 +836,4 @@ test = ["pytest (>=5.3.5)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "18645bbf816f43749780a0e0c2f39264b5264425b26e3fe648cdc87e5aef588d"
+content-hash = "0ecde4adddcdb9f9b6ae8d50f7823b6db5f2badda2b285f1d64f94274217c012"

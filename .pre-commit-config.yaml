@@ -101,7 +101,7 @@ repos:
         # Note that some libraries keep their type hints in packages named
         # `types-$lib` or `$lib-stubs`.
         additional_dependencies:
-          - beancount==3.1.0
+          - beancount==3.2.0
           - beangulp==0.2.0
           - types-openpyxl==3.1.5.20250914
           - types-python-dateutil==2.9.0.20250822

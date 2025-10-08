@@ -104,7 +104,7 @@ repos:
           - beancount==3.2.0
           - beangulp==0.2.0
           - types-openpyxl==3.1.5.20250919
-          - types-python-dateutil==2.9.0.20250822
+          - types-python-dateutil==2.9.0.20251008
           - types-regex==2025.9.18.20250921  # from beancount[types]
         args:
           - --show-error-codes

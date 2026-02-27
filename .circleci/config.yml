@@ -17,4 +17,4 @@ workflows:
           executor: python
           pre-steps:
             - run: apt-get update -y
-            - run: apt-get install --no-install-recommends -y bison
+            - run: apt-get install --no-install-recommends -y bison flex

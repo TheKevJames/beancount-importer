@@ -126,9 +126,6 @@ class Importer(importer.Importer):  # type: ignore[misc]
             return False
         return self.lastfour is None or self.lastfour == match.group(1)
 
-    def name(self) -> str:
-        return f'{super().name()}.{self.account_name}'
-
     def _amount(
             self,
             raw: str | decimal.Decimal,

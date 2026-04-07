@@ -214,10 +214,10 @@ def howto(importer: str) -> None:
             i += 1
     elif importer == 'rbc':
         click.echo(
-            f'{i}. Any Account > Download > CSV / All Accounts '
+            f'{i}. Any Account > Download > More > CSV / All Accounts '
             '/ New Transactions Since Last Download',
         )
-        click.echo(f'{i + 1} bean-import split ~/Downloads')
+        click.echo(f'{i + 1}. bean-import split ~/Downloads')
         i += 2
     elif importer == 'remitbee':
         for definition in config[importer]:

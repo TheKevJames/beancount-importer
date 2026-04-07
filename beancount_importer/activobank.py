@@ -26,9 +26,14 @@ class ActivobankImporter(Importer):
             row: dict[str, Any],
             meta: data.Meta,
     ) -> data.Transaction:
-        date = row.get('Value Date', row['Data Valor'])
-        narration = row.get('Description', row['Descrição'])
-        amt = self._amount(str(row.get('Value', row['Valor'])))
+        try:
+            date = row['Value Date']
+            narration = row['Description']
+            amt = self._amount(str(row['Value']))
+        except KeyError:
+            date = row['Data Valor']
+            narration = row['Descrição']
+            amt = self._amount(str(row['Valor']))
 
         return self._transaction(
             meta=meta,

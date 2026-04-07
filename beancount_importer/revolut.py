@@ -16,12 +16,20 @@ class RevolutImporter(Importer):
             row: dict[str, Any],
             meta: data.Meta,
     ) -> data.Transaction:
-        # TODO: check the strip/replaces
-        date = parse(row['Completed Date'].strip()).date()
-        # TODO: parse out payee vs narration?
-        narration = row['Description'].strip()
-        amt_raw = row['Amount'].replace("'", '').strip()
-        amt = self._amount(amt_raw, row['Currency'])
+        try:
+            # TODO: check the strip/replaces
+            date = parse(row['Data de Conclusão'].strip()).date()
+            # TODO: parse out payee vs narration?
+            narration = row['Descrição'].strip()
+            amt_raw = row['Montante'].replace("'", '').strip()
+            amt = self._amount(amt_raw, row['Moeda'])
+        except KeyError:
+            # TODO: check the strip/replaces
+            date = parse(row['Completed Date'].strip()).date()
+            # TODO: parse out payee vs narration?
+            narration = row['Description'].strip()
+            amt_raw = row['Amount'].replace("'", '').strip()
+            amt = self._amount(amt_raw, row['Currency'])
 
         return self._transaction(
             meta=meta,

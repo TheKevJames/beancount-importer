@@ -127,6 +127,7 @@ def split(src: str) -> None:
     """Split merged downloaded files into independent ones."""
     config = Ctx.load_config()
 
+    # rbc
     definitions = config.get('rbc') or []
     if len(definitions) > 2:
         merged_regex = re.compile(r'csv\d+\.csv')
@@ -136,7 +137,7 @@ def split(src: str) -> None:
                     continue
 
                 fpath = dirpath / fname
-                click.echo(f'Found ambiguous RBC csv {fpath}...')
+                click.echo(f'Found grouped RBC csv {fpath}...')
                 with fpath.open('r') as f:
                     lines = f.readlines()
 
@@ -152,6 +153,48 @@ def split(src: str) -> None:
 
                 click.echo(f'Deleting {fpath}')
                 fpath.unlink()
+
+    # TODO: merge with rbc implementation (rbc doesn't track bad accounts!) and
+    # dedupe. Move into importer?
+    # wealthsimple
+    definitions = config.get('wealthsimple') or []
+    if len(definitions) >= 2:
+        merged_regex = re.compile(r'^activities-export-\d+-\d+-\d+\.csv')
+        for (dirpath, _dirnames, filenames) in pathlib.Path(src).walk():
+            for fname in filenames:
+                if not merged_regex.match(fname):
+                    continue
+
+                fpath = dirpath / fname
+                click.echo(f'Found grouped Wealthsimple csv {fpath}...')
+                with fpath.open('r') as f:
+                    lines = f.readlines()
+
+                header = lines[0]
+                body = []
+                accounts = {}
+                for x in lines[1:]:
+                    if x.strip() and not x.startswith('"As of '):
+                        body.append(x)
+                        accid = x.split(',')[2]
+                        accounts[accid[5:-3]] = accid
+
+                prefix = 'monthly-statement-transactions-'
+                for accid in accounts.values():
+                    new_fname = dirpath / f'{prefix}{accid}-0.csv'
+                    click.echo(f'* writing data for {accid} to {new_fname}')
+                    with new_fname.open('w') as f:
+                        f.write(header)
+                        for x in body:
+                            if x.split(',')[2] == accid:
+                                f.write(x)
+
+                click.echo(f'Deleting {fpath}')
+                fpath.unlink()
+
+                for lastfour, accid in accounts.items():
+                    if lastfour not in {x['lastfour'] for x in definitions}:
+                        click.echo(f'No definition for: {accid}', err=True)
 
 
 @run.command()
@@ -256,17 +299,23 @@ def howto(importer: str) -> None:
         )
         i += 1
     elif importer == 'wealthsimple':
+        date: str = 'Z'
         for definition in config[importer]:
             account = definition['account']
-            click.echo(f'{i}. Select account {account}')
-            click.echo(f'{i + 1}. View statements')
+            date = min(
+                query(
+                    'index.beancount',
+                    f'SELECT LAST(date) WHERE account="{account}"',
+                ).splitlines()[-1],
+                date,
+            )
 
-            date = query(
-                'index.beancount',
-                f'SELECT LAST(date) WHERE account="{account}"',
-            ).splitlines()[-1]
-            click.echo(f'{i + 2}. Download all records from >={date}')
-            i += 3
+        click.echo(f'{i}. Me > Documents > Performance Statements')
+        click.echo(f'{i + 1}. Download all Checking records from >={date}')
+        click.echo(f'{i + 2}. Recent Activity > View All > Download')
+        click.echo(f'{i + 3}. Download all Investment records from >={date}')
+        click.echo(f'{i + 4}. bean-import split ~/Downloads')
+        i += 5
     else:
         click.echo(f'Invalid importer {importer} (or missing howto!)')
         raise click.Abort()

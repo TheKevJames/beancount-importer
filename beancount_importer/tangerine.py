@@ -10,7 +10,7 @@ from .utils import Importer
 class TangerineImporter(Importer):
     _default_currency = 'CAD'
     _require_lastfour = True
-    _regex_fname = re.compile(r'^(?:\d+ xxxx )?xxxx ?(\d+)\.CSV$')
+    _regex_fname = re.compile(r'^(?:\d+ xxxx )?xxxx ?(\d+)\.(?:\d+\.)?CSV$')
 
     def _extract_from_row(
             self,

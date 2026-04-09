@@ -125,6 +125,7 @@ def run(ctx: click.Context) -> None:
 @click.argument('src')
 def split(src: str) -> None:
     """Split merged downloaded files into independent ones."""
+    # pylint: disable=too-complex,too-many-locals,too-many-branches
     config = Ctx.load_config()
 
     # rbc
@@ -201,124 +202,41 @@ def split(src: str) -> None:
 @click.argument('importer', type=click.Choice(list(IMPORTERS.keys())))
 def howto(importer: str) -> None:
     """Print howto guide for a specific account type."""
-    # pylint: disable=too-complex,too-many-branches,too-many-statements
-    # TODO: clean this up
     if not sh.which('bean-query'):
         click.echo('Missing dependency bean-query.', err=True)
         click.echo('Try `pipx install beanquery`.', err=True)
         raise click.Abort()
 
-    query = sh.Command('bean-query')
-    config = Ctx.load_config()
+    query_cmd = sh.Command('bean-query')
+
+    def query(account: str) -> str:
+        # TODO: can LAST include balance statements?
+        expr = f'SELECT LAST(date) WHERE account="{account}"'
+        date: str = query_cmd('index.beancount', expr).splitlines()[-1]
+        return date
+
+    try:
+        config = Ctx.load_config()[importer]
+    except KeyError as e:
+        click.echo(f'ERROR: Invalid importer {importer}')
+        raise click.Abort() from e
+
+    try:
+        accounts = [x['account'] for x in config]
+    except KeyError as e:
+        click.echo('ERROR: Malformed config (missing "account" key)')
+        raise click.Abort() from e
+
+    try:
+        lines = IMPORTERS[importer].howto(query, accounts)
+    except Exception as e:
+        click.echo(f'ERROR: {e}')
+        raise click.Abort() from e
 
     i = 1
-    if importer == 'activobank':
-        for definition in config[importer]:
-            account = definition['account']
-            click.echo(f'{i}. Select account {account}')
-
-            # TODO: can LAST include balance statements?
-            date = query(
-                'index.beancount',
-                f'SELECT LAST(date) WHERE account="{account}"',
-            ).splitlines()[-1]
-            click.echo(f'{i + 1}. Query data from >={date}')
-            click.echo(f'{i + 2}. Export as XLSX')
-            i += 3
-    elif importer == 'brim':
-        for definition in config[importer]:
-            account = definition['account']
-            click.echo(f'{i}. Select account {account}')
-
-            date = query(
-                'index.beancount',
-                f'SELECT LAST(date) WHERE account="{account}"',
-            ).splitlines()[-1]
-            click.echo(f'{i + 1}. For each billing period since {date}')
-            click.echo(f'{i + 2}. Activity > Statements > Download > CSV')
-            i += 3
-    elif importer == 'chase':
-        for definition in config[importer]:
-            account = definition['account']
-            click.echo(f'{i}. Select account {account}')
-            click.echo(f'{i + 1}. Download Activity > Choose a date range')
-
-            date = query(
-                'index.beancount',
-                f'SELECT LAST(date) WHERE account="{account}"',
-            ).splitlines()[-1]
-            click.echo(f'{i + 2}. Query date from >={date}')
-            i += 3
-    elif importer == 'eq':
-        for definition in config[importer]:
-            account = definition['account']
-            click.echo(f'{i}. Select account {account}')
-            click.echo('TODO')
-            i += 1
-    elif importer == 'rbc':
-        click.echo(
-            f'{i}. Any Account > Download > More > CSV / All Accounts '
-            '/ New Transactions Since Last Download',
-        )
-        click.echo(f'{i + 1}. bean-import split ~/Downloads')
-        i += 2
-    elif importer == 'remitbee':
-        for definition in config[importer]:
-            account = definition['account']
-            click.echo(f'{i}. Select account {account}')
-            click.echo(f'{i + 1}. Dashboard > Your Transactions > View All')
-
-            date = query(
-                'index.beancount',
-                f'SELECT LAST(date) WHERE account="{account}"',
-            ).splitlines()[-1]
-            click.echo(f'{i + 2}. Filter date from >={date}, include Balance')
-            click.echo(f'{i + 3}. Download > CSV File')
-            i += 4
-    elif importer == 'revolut':
-        for definition in config[importer]:
-            account = definition['account']
-            click.echo(f'{i}. Select account {account}')
-            click.echo(f'{i + 1}. Statement > Excel')
-
-            date = query(
-                'index.beancount',
-                f'SELECT LAST(date) WHERE account="{account}"',
-            ).splitlines()[-1]
-            click.echo(f'{i + 2}. Query date from >={date}')
-    elif importer == 'tangerine':
-        click.echo(
-            f'{i}. Transactions > Download Transactions '
-            '> All Since Last Download / CSV',
-        )
-        # TODO: update `split` command, maybe rename to `pre-process`? or
-        # download via append.
-        click.echo(
-            '   Note: for credit cards, you need to repeat this for each '
-            'statement month',
-        )
+    for line in lines:
+        click.echo(f'{i}. {line}')
         i += 1
-    elif importer == 'wealthsimple':
-        date: str = 'Z'
-        for definition in config[importer]:
-            account = definition['account']
-            date = min(
-                query(
-                    'index.beancount',
-                    f'SELECT LAST(date) WHERE account="{account}"',
-                ).splitlines()[-1],
-                date,
-            )
-
-        click.echo(f'{i}. Me > Documents > Performance Statements')
-        click.echo(f'{i + 1}. Download all Checking records from >={date}')
-        click.echo(f'{i + 2}. Recent Activity > View All > Download')
-        click.echo(f'{i + 3}. Download all Investment records from >={date}')
-        click.echo(f'{i + 4}. bean-import split ~/Downloads')
-        i += 5
-    else:
-        click.echo(f'Invalid importer {importer} (or missing howto!)')
-        raise click.Abort()
 
     click.echo(f'{i}. bean-import identify -xv ~/Downloads')
     click.echo(f'{i + 1}. bean-import extract -xe index.beancount ~/Downloads')

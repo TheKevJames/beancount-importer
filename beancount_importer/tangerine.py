@@ -1,4 +1,6 @@
 import re
+from collections.abc import Callable
+from collections.abc import Iterator
 from typing import Any
 
 from beancount.core import data
@@ -33,3 +35,14 @@ class TangerineImporter(Importer):
                 self._posting(self.account_name, amt),
             ],
         )
+
+    @classmethod
+    def howto(
+            cls,
+            query: Callable[[str], str],
+            accounts: list[str],
+    ) -> Iterator[str]:
+        yield 'Transactions > Download Transactions > All Since Last Download'
+        # TODO: update `split` command, maybe rename to `pre-process`? or
+        # download via append.
+        yield '  Note: for credit cards, repeat this for each statement month'

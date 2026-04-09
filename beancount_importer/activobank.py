@@ -1,5 +1,6 @@
 import datetime
 import re
+from collections.abc import Callable
 from collections.abc import Iterator
 from typing import Any
 from typing import cast
@@ -68,3 +69,16 @@ class ActivobankImporter(Importer):
         for index, row in enumerate(rows):
             meta = data.new_metadata(fname, index)
             yield self._extract_from_row(row, meta)
+
+    @classmethod
+    def howto(
+            cls,
+            query: Callable[[str], str],
+            accounts: list[str],
+    ) -> Iterator[str]:
+        for account in accounts:
+            yield f'Select account {account}'
+
+            date = query(account)
+            yield f'Query data from >={date}'
+            yield 'Export as XLSX'

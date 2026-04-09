@@ -1,5 +1,7 @@
 import datetime
 import re
+from collections.abc import Callable
+from collections.abc import Iterator
 from typing import Any
 
 from beancount.core import data
@@ -29,7 +31,12 @@ class WealthsimpleImporter(Importer):
         label = price if kind == 'BUY' else None
 
         symbol = row['symbol'].replace('.', '')
-        cost = position.Cost(row['unit_price'], row['currency'], date_, label)
+        cost = position.Cost(
+            row['unit_price'],
+            row['currency'],
+            date_,  # type: ignore[arg-type]
+            label,  # type: ignore[arg-type]
+        )
         amt = self._amount(row['quantity'], symbol)
         total = self._amount(row['net_cash_amount'], row['currency'])
 
@@ -49,7 +56,6 @@ class WealthsimpleImporter(Importer):
                     None,
                 ),
             )
-            pass
         return postings
 
     def _extract_from_row(
@@ -98,3 +104,24 @@ class WealthsimpleImporter(Importer):
             narration=narration,
             postings=postings,
         )
+
+    @classmethod
+    def howto(
+            cls,
+            query: Callable[[str], str],
+            accounts: list[str],
+    ) -> Iterator[str]:
+        for account in accounts:
+            yield f'Select account {account}'
+            yield 'Statement > Excel'
+
+            date = query(account)
+            yield f'Query date from >={date}'
+
+        yield 'Me > Documents > Performance Statements'
+
+        date = min(query(account) for account in accounts)
+        yield f'Download all Checking records from >={date}'
+        yield 'Recent Activity > View All > Download'
+        yield f'Download all Investment records from >={date}'
+        yield 'bean-import split ~/Downloads'

@@ -10,6 +10,53 @@ from beancount.core import position
 from .utils import Importer
 
 
+class WealthsimpleCreditCardImporter(Importer):
+    _default_currency = 'CAD'
+    _require_lastfour = False
+    _regex_fname = re.compile(
+        r'^credit-card-statement-transactions-\d{4}-\d{2}-\d{2}.csv$',
+    )
+
+    def _extract_from_row(
+            self,
+            row: dict[str, Any],
+            meta: data.Meta,
+    ) -> data.Transaction | None:
+        date = datetime.datetime.fromisoformat(row['transaction_date'])
+        narration = row['details']
+        amt = self._amount(row['amount'], row['currency'])
+
+        kind = row['type']
+        if kind == 'Refund settled':
+            narration = f'{narration} (refund)'
+
+        if kind not in {'Payment', 'Purchase', 'Refund settled'}:
+            print(row)
+            assert False, f'invalid type {kind}'
+
+        return self._transaction(
+            meta=meta,
+            date=date.date(),
+            narration=narration,
+            postings=[
+                self._posting(self.account_name, -amt),
+            ],
+        )
+
+    @classmethod
+    def howto(
+            cls,
+            query: Callable[[str], str],
+            accounts: list[str],
+    ) -> Iterator[str]:
+        for account in accounts:
+            yield f'Select account {account}'
+            yield 'Me > Documents > Performance Statements'
+
+            date = query(account)
+            yield f'Download statements from >={date}'
+
+
 class WealthsimpleImporter(Importer):
     _default_currency = 'CAD'
     _require_lastfour = True

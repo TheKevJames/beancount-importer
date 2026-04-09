@@ -24,6 +24,7 @@ from .revolut import RevolutImporter
 from .tangerine import TangerineImporter
 from .utils import AccountPattern
 from .utils import Importer
+from .wealthsimple import WealthsimpleCreditCardImporter
 from .wealthsimple import WealthsimpleImporter
 
 
@@ -44,6 +45,7 @@ IMPORTERS: dict[str, type[Importer]] = {
     'revolut': RevolutImporter,
     'tangerine': TangerineImporter,
     'wealthsimple': WealthsimpleImporter,
+    'wealthsimple-credit-card': WealthsimpleCreditCardImporter,
 }
 
 

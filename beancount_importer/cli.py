@@ -21,6 +21,7 @@ from .paypal import PaypalImporter
 from .rbc import RbcImporter
 from .remitbee import RemitbeeImporter
 from .revolut import RevolutImporter
+from .santander import SantanderImporter
 from .tangerine import TangerineImporter
 from .utils import AccountPattern
 from .utils import Importer
@@ -43,6 +44,7 @@ IMPORTERS: dict[str, type[Importer]] = {
     'rbc': RbcImporter,
     'remitbee': RemitbeeImporter,
     'revolut': RevolutImporter,
+    'santander': SantanderImporter,
     'tangerine': TangerineImporter,
     'wealthsimple': WealthsimpleImporter,
     'wealthsimple-credit-card': WealthsimpleCreditCardImporter,

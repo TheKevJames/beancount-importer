@@ -16,7 +16,7 @@ dependencies = [
     "openpyxl>=3.0.0,<4.0.0",
     "py-pdf-parser>=0.10.0,<0.14.0",
     "python-dateutil>=2.0.0,<3.0.0",
-    "sh>=2.0.0,<3.0.0",
+    "sh>=2.2.4,<3.0.0",
     "titlecase>=2.0.0,<3.0.0",
 ]
 

@@ -1,0 +1,14 @@
+.pre-commit-config.yaml
+  h_b8efbacaba1c31 207,209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "252ee86212bd9ad969d45b757bbf9d54ba041eac",
+  "prompts": {},
+  "humans": {
+    "h_b8efbacaba1c31": {
+      "author": "Kevin James <KevinJames@thekev.in>"
+    }
+  }
+}

@@ -21,9 +21,7 @@ class RbcImporter(Importer):
     _regex_fname = re.compile(r'rbc(\d{4}).csv\d+\.csv')
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction | None:
         if not row['Account Number'].endswith(self.lastfour):
             return None
@@ -38,16 +36,12 @@ class RbcImporter(Importer):
             date=date,
             narration=narration,
             payee=payee,
-            postings=[
-                self._posting(self.account_name, amt),
-            ],
+            postings=[self._posting(self.account_name, amt)],
         )
 
     @classmethod
     def howto(
-            cls,
-            query: Callable[[str], str],
-            accounts: list[str],
+        cls, query: Callable[[str], str], accounts: list[str]
     ) -> Iterator[str]:
         yield (
             'Any Account > Download > More > CSV / All Accounts '

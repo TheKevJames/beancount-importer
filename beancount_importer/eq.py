@@ -21,9 +21,7 @@ class EqImporter(Importer):
         return cast(str, row['Deposits'].strip('$'))
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
         # TODO: get year from filename?
         date = parse(row['Date']).date()
@@ -35,9 +33,7 @@ class EqImporter(Importer):
             meta=meta,
             date=date,
             narration=narration,
-            postings=[
-                self._posting(self.account_name, amt),
-            ],
+            postings=[self._posting(self.account_name, amt)],
         )
 
     def _extract(self, fname: str) -> Iterator[data.Transaction]:

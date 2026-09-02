@@ -3,15 +3,14 @@ import re
 from collections.abc import Callable
 from collections.abc import Iterator
 from typing import Any
-from typing import cast
 from typing import TypeAlias
+from typing import cast
 
 import openpyxl
 from beancount.core import data
 from openpyxl.worksheet.worksheet import Worksheet
 
 from .utils import Importer
-
 
 Header: TypeAlias = tuple[str, str, str, str, str]
 Row: TypeAlias = tuple[datetime.datetime, datetime.datetime, str, float, float]
@@ -23,9 +22,7 @@ class ActivobankImporter(Importer):
     _regex_fname = re.compile(r'^mov\d+(\d{4})-\d+-\d+.xlsx$')
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
         try:
             date = row['Value Date']
@@ -40,9 +37,7 @@ class ActivobankImporter(Importer):
             meta=meta,
             date=date.date(),
             narration=narration,
-            postings=[
-                self._posting(self.account_name, amt),
-            ],
+            postings=[self._posting(self.account_name, amt)],
         )
 
     def _extract(self, fname: str) -> Iterator[data.Transaction]:
@@ -72,9 +67,7 @@ class ActivobankImporter(Importer):
 
     @classmethod
     def howto(
-            cls,
-            query: Callable[[str], str],
-            accounts: list[str],
+        cls, query: Callable[[str], str], accounts: list[str]
     ) -> Iterator[str]:
         for account in accounts:
             yield f'Select account {account}'

@@ -14,10 +14,8 @@ from dateutil.parser import parse
 
 from .utils import Importer
 
-
 MetaTuple = tuple[
-    datetime.datetime, dict[str, int | str], str, str,
-    amount.Amount,
+    datetime.datetime, dict[str, int | str], str, str, amount.Amount
 ]
 
 
@@ -61,7 +59,8 @@ class PaypalImporter(Importer):
         if name == 'PayPal' and kind == 'Reversal of General Account Hold':
             return True
         if (
-            name == transaction[2] and kind == 'General Authorization'
+            name == transaction[2]
+            and kind == 'General Authorization'
             and amt == transaction[4]
         ):
             return True
@@ -85,8 +84,7 @@ class PaypalImporter(Importer):
             yield batch
 
     def _consolidate_conversions(
-        self,
-        xs: list[MetaTuple],
+        self, xs: list[MetaTuple]
     ) -> list[data.Posting]:
         """
         Turn a set of records into one Posting with a conversion.
@@ -126,8 +124,7 @@ class PaypalImporter(Importer):
         ]
 
     def _merge(
-            self,
-            xss: Iterable[list[MetaTuple]],
+        self, xss: Iterable[list[MetaTuple]]
     ) -> Iterator[data.Transaction]:
         for xs in xss:
             postings = self._consolidate_conversions(xs)
@@ -142,8 +139,6 @@ class PaypalImporter(Importer):
             )
 
     def extract(
-            self,
-            fname: str,
-            _existing: list[data.Transaction],
+        self, fname: str, _existing: list[data.Transaction]
     ) -> list[data.Transaction]:
         return list(self._merge(self._group(self._extractz(fname))))

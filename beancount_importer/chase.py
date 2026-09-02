@@ -13,8 +13,7 @@ class ChaseImporter(Importer):
     _default_currency = 'USD'
     _require_lastfour = True
     _regex_fname = re.compile(
-        r'Chase(\d{4})_Activity[\d_]+.CSV',
-        re.IGNORECASE,
+        r'Chase(\d{4})_Activity[\d_]+.CSV', re.IGNORECASE
     )
 
     regex_desc_full = re.compile(
@@ -25,13 +24,13 @@ class ChaseImporter(Importer):
         re.IGNORECASE,
     )
     regex_desc_generic = re.compile(
-        r'(.+?)\s+(PPD|WEB) ID: \d+', re.IGNORECASE,
+        r'(.+?)\s+(PPD|WEB) ID: \d+', re.IGNORECASE
     )
     regex_desc_inbound_tx = re.compile(
-        r'Online Transfer \d+ from (.+?)\s*transaction #', re.IGNORECASE,
+        r'Online Transfer \d+ from (.+?)\s*transaction #', re.IGNORECASE
     )
     regex_desc_outbound_tx = re.compile(
-        r'Online Transfer \d+ to (.+?)\s*transaction #', re.IGNORECASE,
+        r'Online Transfer \d+ to (.+?)\s*transaction #', re.IGNORECASE
     )
 
     def _parse_description(self, description: str) -> tuple[str | None, str]:
@@ -50,9 +49,7 @@ class ChaseImporter(Importer):
         return None, description
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction | None:
         post_date = row.get('Posting Date') or row['Post Date']
         date = parse(post_date).date()
@@ -67,16 +64,12 @@ class ChaseImporter(Importer):
             date=date,
             payee=payee,
             narration=narration,
-            postings=[
-                self._posting(self.account_name, amt),
-            ],
+            postings=[self._posting(self.account_name, amt)],
         )
 
     @classmethod
     def howto(
-            cls,
-            query: Callable[[str], str],
-            accounts: list[str],
+        cls, query: Callable[[str], str], accounts: list[str]
     ) -> Iterator[str]:
         for account in accounts:
             yield f'Select account {account}'

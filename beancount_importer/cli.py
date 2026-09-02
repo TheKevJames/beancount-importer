@@ -3,8 +3,8 @@ import re
 import tomllib
 from collections.abc import Iterable
 from typing import Any
-from typing import cast
 from typing import Protocol
+from typing import cast
 
 import beangulp  # type: ignore[import-untyped]
 import click
@@ -27,7 +27,6 @@ from .utils import AccountPattern
 from .utils import Importer
 from .wealthsimple import WealthsimpleCreditCardImporter
 from .wealthsimple import WealthsimpleImporter
-
 
 # TODO: enable beangulp type checking once it has a py.typed
 # https://github.com/beancount/beangulp/pull/141
@@ -54,9 +53,9 @@ IMPORTERS: dict[str, type[Importer]] = {
 # See https://github.com/beancount/beangulp/blob/v0.2.0/examples/import.py#L53
 class Hook(Protocol):
     def __call__(
-            self,
-            extracted_entries: list[tuple[str, list[data.Transaction]]],
-            ledger_entries: list[data.Transaction] | None = None,
+        self,
+        extracted_entries: list[tuple[str, list[data.Transaction]]],
+        ledger_entries: list[data.Transaction] | None = None,
     ) -> list[tuple[str, list[data.Transaction]]]:
         """
         Hook function type hint.
@@ -68,7 +67,7 @@ class Hook(Protocol):
             ledger of the user. This is non-None if the user provided their
             ledger file as an option.
 
-        Returns
+        Returns:
           A possibly different version of extracted_entries_list, a list of
           (filename, entries), to be printed.
         """
@@ -108,7 +107,8 @@ class Ctx:
                 yield IMPORTERS[section](
                     definition['account'],
                     account_patterns=(
-                        patterns + [
+                        patterns
+                        + [
                             AccountPattern.from_config(x)
                             for x in definition.get('patterns', [])
                         ]
@@ -127,16 +127,16 @@ def run(ctx: click.Context) -> None:
 
 @run.command()
 @click.argument('src')
-def split(src: str) -> None:
+def split(src: str) -> None:  # noqa: C901
     """Split merged downloaded files into independent ones."""
-    # pylint: disable=too-complex,too-many-locals,too-many-branches
+    # pylint: disable=too-many-locals,too-many-branches
     config = Ctx.load_config()
 
     # rbc
     definitions = config.get('rbc') or []
     if len(definitions) > 2:
         merged_regex = re.compile(r'csv\d+\.csv')
-        for (dirpath, _dirnames, filenames) in pathlib.Path(src).walk():
+        for dirpath, _dirnames, filenames in pathlib.Path(src).walk():
             for fname in filenames:
                 if not merged_regex.match(fname):
                     continue
@@ -165,7 +165,7 @@ def split(src: str) -> None:
     definitions = config.get('wealthsimple') or []
     if len(definitions) >= 2:
         merged_regex = re.compile(r'^activities-export-\d+-\d+-\d+\.csv')
-        for (dirpath, _dirnames, filenames) in pathlib.Path(src).walk():
+        for dirpath, _dirnames, filenames in pathlib.Path(src).walk():
             for fname in filenames:
                 if not merged_regex.match(fname):
                     continue

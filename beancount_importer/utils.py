@@ -8,8 +8,8 @@ from collections.abc import Callable
 from collections.abc import Iterable
 from collections.abc import Iterator
 from typing import Any
-from typing import cast
 from typing import Self
+from typing import cast
 
 import titlecase
 from beancount.core import amount
@@ -19,7 +19,6 @@ from beancount.core import number
 from beancount.core import position
 from beangulp import importer  # type: ignore[import-untyped]
 
-
 # TODO: until the beancount.core.data type hints are working, this isn't very
 # useful.
 # Eventually, all extract() methods should get updated to return any directives
@@ -28,7 +27,7 @@ from beangulp import importer  # type: ignore[import-untyped]
 #              | data.Price | data.Query | data.Transaction)
 
 
-class AccountPatternTarget(str, enum.Enum):
+class AccountPatternTarget(enum.StrEnum):
     BOTH = 'both'
     EITHER = 'either'
     NARRATION = 'narration'
@@ -37,12 +36,12 @@ class AccountPatternTarget(str, enum.Enum):
 
 class AccountPattern:
     def __init__(
-            self,
-            account: data.Account,
-            pattern: str,
-            *,
-            flag: data.Flag | None = None,
-            target: AccountPatternTarget = AccountPatternTarget.EITHER,
+        self,
+        account: data.Account,
+        pattern: str,
+        *,
+        flag: data.Flag | None = None,
+        target: AccountPatternTarget = AccountPatternTarget.EITHER,
     ) -> None:
         self.account = account
         self.flag = flag
@@ -69,7 +68,7 @@ class AccountPattern:
             return bool(self.pattern.search(tx.payee))
         if self.target == AccountPatternTarget.BOTH:
             return bool(
-                self.pattern.search(f'{tx.payee or ""};{tx.narration or ""}'),
+                self.pattern.search(f'{tx.payee or ""};{tx.narration or ""}')
             )
         if self.target == AccountPatternTarget.EITHER:
             if tx.narration and self.pattern.search(tx.narration):
@@ -93,12 +92,12 @@ class Importer(importer.Importer):  # type: ignore[misc]
     _regex_fname: re.Pattern[str]
 
     def __init__(
-            self,
-            account_name: data.Account,
-            *,
-            account_patterns: list[AccountPattern] | None = None,
-            currency: data.Currency | None = None,
-            lastfour: str | None = None,
+        self,
+        account_name: data.Account,
+        *,
+        account_patterns: list[AccountPattern] | None = None,
+        currency: data.Currency | None = None,
+        lastfour: str | None = None,
     ) -> None:
         self.account_name = str(account_name)
         self.account_patterns = account_patterns or []
@@ -128,9 +127,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
         return self.lastfour is None or self.lastfour == match.group(1)
 
     def _amount(
-            self,
-            raw: str | decimal.Decimal,
-            currency: data.Currency | None = None,
+        self, raw: str | decimal.Decimal, currency: data.Currency | None = None
     ) -> amount.Amount:
         currency = currency or self.currency
         assert currency, 'currency must be set for transaction'
@@ -139,13 +136,13 @@ class Importer(importer.Importer):  # type: ignore[misc]
         return amount.Amount(dec, currency)
 
     def _transaction(
-            self,
-            *,
-            meta: data.Meta,
-            date: datetime.date,
-            narration: str,
-            payee: str | None = None,
-            postings: list[data.Posting] | None = None,
+        self,
+        *,
+        meta: data.Meta,
+        date: datetime.date,
+        narration: str,
+        payee: str | None = None,
+        postings: list[data.Posting] | None = None,
     ) -> data.Transaction:
         return data.Transaction(
             meta=meta,
@@ -159,20 +156,18 @@ class Importer(importer.Importer):  # type: ignore[misc]
         )
 
     def _posting(
-            self,
-            account: data.Account,
-            units: amount.Amount | None,
-            cost: position.Cost | position.CostSpec | None = None,
-            price: amount.Amount | None = None,
-            flag: data.Flag | None = None,
-            meta: data.Meta | None = None,
+        self,
+        account: data.Account,
+        units: amount.Amount | None,
+        cost: position.Cost | position.CostSpec | None = None,
+        price: amount.Amount | None = None,
+        flag: data.Flag | None = None,
+        meta: data.Meta | None = None,
     ) -> data.Posting:
         return data.Posting(account, units, cost, price, flag, meta)
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction | None:
         raise NotImplementedError()
 
@@ -183,8 +178,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
                 yield self._extract_from_row(row, meta)
 
     def _filter(
-            self,
-            xs: Iterable[data.Transaction | None],
+        self, xs: Iterable[data.Transaction | None]
     ) -> Iterator[data.Transaction]:
         for x in xs:
             if not x:
@@ -202,16 +196,13 @@ class Importer(importer.Importer):  # type: ignore[misc]
         return x
 
     def _add_postings(
-            self,
-            xs: Iterable[data.Transaction],
+        self, xs: Iterable[data.Transaction]
     ) -> Iterator[data.Transaction]:
         for x in xs:
             yield self._add_posting(x)
 
     def extract(
-            self,
-            fname: str,
-            _existing: list[data.Transaction],
+        self, fname: str, _existing: list[data.Transaction]
     ) -> list[data.Transaction]:
         # TODO: print proposed data.Balance() record at end?
         # It should be manually checked anyway, so probably a bad idea to emit
@@ -219,9 +210,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
 
     @classmethod
     def howto(
-            cls,
-            query: Callable[[str], str],
-            accounts: list[str],
+        cls, query: Callable[[str], str], accounts: list[str]
     ) -> Iterator[str]:
         _ = accounts
         _ = query

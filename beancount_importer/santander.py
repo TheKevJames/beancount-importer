@@ -22,9 +22,7 @@ class SantanderImporter(Importer):
         return amt
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
         date = parse(row['Date']).date()
         narration = row['Description']
@@ -34,13 +32,11 @@ class SantanderImporter(Importer):
             meta=meta,
             date=date,
             narration=narration,
-            postings=[
-                self._posting(self.account_name, amt),
-            ],
+            postings=[self._posting(self.account_name, amt)],
         )
 
-    def _extract(self, fname: str) -> Iterator[data.Transaction]:
-        # pylint: disable=too-complex,too-many-locals
+    def _extract(self, fname: str) -> Iterator[data.Transaction]:  # noqa: C901
+        # pylint: disable=too-many-locals
         year = fname.rsplit('/', 1)[-1].replace('EXTCON', '')[:4]
         with open(fname, 'rb') as f:
             header_bytes = f.read(27)
@@ -60,10 +56,10 @@ class SantanderImporter(Importer):
                 doc = py_pdf_parser.loaders.load(f)
 
         header = doc.elements.filter_by_text_equal(
-            'Detalhe de Movimentos da Conta à Ordem',
+            'Detalhe de Movimentos da Conta à Ordem'
         )[-1]
         footer = doc.elements.filter_by_text_contains(
-            'Saldo Disponível Final',
+            'Saldo Disponível Final'
         )[0]
         body = doc.elements.between(header, footer)
 
@@ -98,7 +94,7 @@ class SantanderImporter(Importer):
                     continue
 
                 if desc.startswith(d):
-                    desc = desc[len(d):].strip()
+                    desc = desc[len(d) :].strip()
 
                 row = {
                     'Date': f'{year}-{d[3:5]}-{d[0:2]}',

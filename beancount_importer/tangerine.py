@@ -15,9 +15,7 @@ class TangerineImporter(Importer):
     _regex_fname = re.compile(r'^(?:\d+ xxxx )?xxxx ?(\d+)\.(?:\d+\.)?CSV$')
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction | None:
         date = parse(row.get('Date') or row['Transaction date']).date()
         payee: str | None = row['Memo'].strip() or None
@@ -31,16 +29,12 @@ class TangerineImporter(Importer):
             date=date,
             narration=narration,
             payee=payee,
-            postings=[
-                self._posting(self.account_name, amt),
-            ],
+            postings=[self._posting(self.account_name, amt)],
         )
 
     @classmethod
     def howto(
-            cls,
-            query: Callable[[str], str],
-            accounts: list[str],
+        cls, query: Callable[[str], str], accounts: list[str]
     ) -> Iterator[str]:
         yield 'Transactions > Download Transactions > All Since Last Download'
         # TODO: update `split` command, maybe rename to `pre-process`? or

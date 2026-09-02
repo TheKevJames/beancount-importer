@@ -12,9 +12,7 @@ class AmexImporter(Importer):
     _regex_fname = re.compile(r'Transactions.*\.csv')
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
         # TODO: check if splitting is necessary
         date = parse(row['Date'].split(' ')[0]).date()
@@ -26,7 +24,5 @@ class AmexImporter(Importer):
             meta=meta,
             date=date,
             narration=narration,
-            postings=[
-                self._posting(self.account_name, amt),
-            ],
+            postings=[self._posting(self.account_name, amt)],
         )

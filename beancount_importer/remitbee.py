@@ -13,13 +13,11 @@ from .utils import Importer
 class RemitbeeImporter(Importer):
     _require_lastfour = False
     _regex_fname = re.compile(
-        r'^(balance|transaction)_history_[-\w\d_ ]+.csv$',
+        r'^(balance|transaction)_history_[-\w\d_ ]+.csv$'
     )
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction | None:
         recipient = row['Recipient']
         if recipient == 'Amount sent':
@@ -56,24 +54,21 @@ class RemitbeeImporter(Importer):
                 # which means we can't support account_patterns properly here.
                 # As such, we use an unknown account and flag it for review.
                 self._posting(
-                    'Expenses:Unknown', recv_amt, price=price,
+                    'Expenses:Unknown',
+                    recv_amt,
+                    price=price,
                     flag=flags.FLAG_WARNING,
                 ),
                 self._posting(self.account_name, -send_amt),
             ]
 
         return self._transaction(
-            meta=meta,
-            date=date.date(),
-            narration=narration,
-            postings=postings,
+            meta=meta, date=date.date(), narration=narration, postings=postings
         )
 
     @classmethod
     def howto(
-            cls,
-            query: Callable[[str], str],
-            accounts: list[str],
+        cls, query: Callable[[str], str], accounts: list[str]
     ) -> Iterator[str]:
         for account in accounts:
             yield f'Select account {account}'

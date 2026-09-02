@@ -14,9 +14,7 @@ class RevolutImporter(Importer):
     _regex_fname = re.compile(r'account-statement.*\.csv')
 
     def _extract_from_row(
-            self,
-            row: dict[str, Any],
-            meta: data.Meta,
+        self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
         try:
             # TODO: check the strip/replaces
@@ -37,16 +35,12 @@ class RevolutImporter(Importer):
             meta=meta,
             date=date,
             narration=narration,
-            postings=[
-                self._posting(self.account_name, amt),
-            ],
+            postings=[self._posting(self.account_name, amt)],
         )
 
     @classmethod
     def howto(
-            cls,
-            query: Callable[[str], str],
-            accounts: list[str],
+        cls, query: Callable[[str], str], accounts: list[str]
     ) -> Iterator[str]:
         for account in accounts:
             yield f'Select account {account}'

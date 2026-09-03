@@ -11,7 +11,10 @@ from .utils import Importer
 
 class RevolutImporter(Importer):
     _default_currency = 'EUR'
-    _regex_fname = re.compile(r'account-statement.*\.csv')
+    _require_lastfour = True
+    _regex_fname = re.compile(
+        r'account-statement.*_en-gb_[\d\w]{2}([\d\w]{4})\.csv'
+    )
 
     def _extract_from_row(
         self, row: dict[str, Any], meta: data.Meta

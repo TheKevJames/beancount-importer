@@ -14,6 +14,7 @@ import titlecase
 from beancount.core import amount
 from beancount.core import data
 from beancount.core import flags
+from beancount.core import interpolate
 from beancount.core import number
 from beancount.core import position
 from beangulp import importer  # type: ignore[import-untyped]
@@ -83,13 +84,6 @@ class AccountPattern:
 
         return False
 
-    def posting(self, tx: data.Transaction) -> data.Posting:
-        # TODO: should be inferable somehow if null?
-        assert tx.postings[0].units
-
-        amt = -tx.postings[0].units
-        return data.Posting(self.account, amt, None, None, self.flag, None)
-
 
 class Importer(importer.Importer):  # type: ignore[misc]
     _default_currency: data.Currency | None = None
@@ -102,11 +96,15 @@ class Importer(importer.Importer):  # type: ignore[misc]
         *,
         account_patterns: list[AccountPattern] | None = None,
         currency: data.Currency | None = None,
+        default_expense_account: data.Account = 'Expenses:Unknown',
+        default_equity_account: data.Account = 'Equity:Unknown',
         lastfour: str | None = None,
     ) -> None:
         self.account_name = str(account_name)
         self.account_patterns = account_patterns or []
         self.currency = currency or self._default_currency
+        self.default_expense_account = str(default_expense_account)
+        self.default_equity_account = str(default_equity_account)
         self.lastfour = lastfour
 
         if self._require_lastfour and self.lastfour is None:
@@ -191,12 +189,28 @@ class Importer(importer.Importer):  # type: ignore[misc]
 
             yield x
 
-    def _add_posting(self, x: data.Transaction) -> data.Transaction:
+    def _categorize(
+        self, x: data.Transaction, units: amount.Amount
+    ) -> data.Posting:
+        """Pick an account for `units` via patterns, else a flagged default."""
         for account_pattern in self.account_patterns:
             if account_pattern.matches(x):
-                x.postings.append(account_pattern.posting(x))
-                break
-        # TODO: else, ! Expenses:Unkown?
+                return self._posting(
+                    account_pattern.account, units, flag=account_pattern.flag
+                )
+
+        assert units.number is not None
+        account = (
+            self.default_expense_account
+            if units.number > 0
+            else self.default_equity_account
+        )
+        return self._posting(account, units, flag=flags.FLAG_WARNING)
+
+    def _add_posting(self, x: data.Transaction) -> data.Transaction:
+        residual = interpolate.compute_residual(x.postings)  # type: ignore
+        for pos in residual.get_positions():
+            x.postings.append(self._categorize(x, -pos.units))
 
         return x
 

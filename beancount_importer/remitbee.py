@@ -52,7 +52,7 @@ class RemitbeeImporter(Importer):
                 # which means we can't support account_patterns properly here.
                 # As such, we use an unknown account and flag it for review.
                 self._posting(
-                    'Expenses:Unknown',
+                    self.default_expense_account,
                     recv_amt,
                     price=price,
                     flag=flags.FLAG_WARNING,

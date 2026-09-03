@@ -96,8 +96,20 @@ class Ctx:
     def build_importers(cls) -> Iterable[Importer]:
         config = cls.load_config()
 
+        default_expense = cast(
+            str, config.get('default_expense_account', 'Expenses:Unknown')
+        )
+        default_equity = cast(
+            str, config.get('default_equity_account', 'Equity:Unknown')
+        )
+
         patterns: list[AccountPattern] = []
         for section, definitions in config.items():
+            if section in {
+                'default_expense_account',
+                'default_equity_account',
+            }:
+                continue
             if section == 'patterns':
                 patterns = [AccountPattern.from_config(x) for x in definitions]
                 continue
@@ -113,6 +125,8 @@ class Ctx:
                         ]
                     ),
                     currency=definition.get('currency'),
+                    default_expense_account=default_expense,
+                    default_equity_account=default_equity,
                     lastfour=definition.get('lastfour'),
                 )
 

@@ -32,8 +32,20 @@ concatendated with a semicolon (``;``) for the purpose of parsing, eg.::
     ['both', 'Income:Salary', '^My Company;Salary$'],
 
 If ``beancount-importer.patterns`` is specified, all definitions in that list
-will be applied to all your accounts. In this file, you should also list each
-of your accounts, eg.
+will be applied to all your accounts.
+
+Any transaction which does not balance -- for example, one whose payee and
+narration matched none of your patterns -- has the remaining amount booked to a
+default account and flagged with a ``!`` for review. Positive residuals go to
+``Expenses:Unknown`` and negative residuals to ``Equity:Unknown`` by default.
+Override these with the optional ``default_expense_account`` and
+``default_equity_account`` keys::
+
+    [beancount-importer]
+    default_expense_account = 'Expenses:TODO'
+    default_equity_account = 'Income:TODO'
+
+In this file, you should also list each of your accounts, eg.
 
 .. code-block:: toml
 

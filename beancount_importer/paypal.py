@@ -85,9 +85,13 @@ class PaypalImporter(Importer):
 
     def _consolidate_conversions(
         self, xs: list[MetaTuple]
-    ) -> list[data.Posting]:
+    ) -> tuple[list[data.Posting], amount.Amount]:
         """
-        Turn a set of records into one Posting with a conversion.
+        Turn a set of records into a conversion's base postings.
+
+        Returns the account/conversion postings along with the units of the
+        categorized expense leg, which the caller routes through the shared
+        account-selection logic.
 
         Assumes xs[0] is the source-of-truth expense.
         """
@@ -115,28 +119,28 @@ class PaypalImporter(Importer):
         # TODO: fetch option account_current_conversions
         # https://beancount.github.io/docs/beancount_options_reference.html
         conv = 'Equity:Conversions:Current'
-        # TODO: integrate with account_patterns
-        category = 'Expenses:Unknown'
-        return [
-            self._posting(category, -expense[4]),
+        base_postings = [
             self._posting(self.account_name, cost),
             self._posting(conv, None),
         ]
+        return base_postings, -expense[4]
 
     def _merge(
         self, xss: Iterable[list[MetaTuple]]
     ) -> Iterator[data.Transaction]:
         for xs in xss:
-            postings = self._consolidate_conversions(xs)
+            postings, category_units = self._consolidate_conversions(xs)
 
             date, meta, payee, narration, _ = xs[0]
-            yield self._transaction(
+            tx = self._transaction(
                 meta=meta,
                 date=date,
                 payee=payee,
                 narration=narration,
                 postings=postings,
             )
+            tx.postings.insert(0, self._categorize(tx, category_units))
+            yield tx
 
     def extract(
         self, fname: str, _existing: list[data.Transaction]

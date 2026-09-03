@@ -23,10 +23,15 @@ class WealthsimpleCreditCardImporter(Importer):
         amt = self._amount(row['amount'], row['currency'])
 
         kind = row['type']
-        if kind == 'Refund settled':
+        if kind in {'Refund initiated', 'Refund settled'}:
             narration = f'{narration} (refund)'
 
-        if kind not in {'Payment', 'Purchase', 'Refund settled'}:
+        if kind not in {
+            'Payment',
+            'Purchase',
+            'Refund initiated',
+            'Refund settled',
+        }:
             print(row)
             assert False, f'invalid type {kind}'
 

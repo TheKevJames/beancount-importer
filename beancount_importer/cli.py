@@ -176,12 +176,13 @@ def split(src: str) -> None:  # noqa: C901
                     lines = f.readlines()
 
                 header = lines[0]
+                account_col = header.strip().split(',').index('account_id')
                 body = []
                 accounts = {}
                 for x in lines[1:]:
                     if x.strip() and not x.startswith('"As of '):
                         body.append(x)
-                        accid = x.split(',')[2]
+                        accid = x.split(',')[account_col]
                         accounts[accid[5:-3]] = accid
 
                 prefix = 'monthly-statement-transactions-'
@@ -191,7 +192,7 @@ def split(src: str) -> None:  # noqa: C901
                     with new_fname.open('w') as f:
                         f.write(header)
                         for x in body:
-                            if x.split(',')[2] == accid:
+                            if x.split(',')[account_col] == accid:
                                 f.write(x)
 
                 click.echo(f'Deleting {fpath}')

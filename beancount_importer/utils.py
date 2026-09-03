@@ -18,6 +18,12 @@ from beancount.core import number
 from beancount.core import position
 from beangulp import importer  # type: ignore[import-untyped]
 
+
+def _normalize_narration(narration: str) -> str:
+    value: str = titlecase.titlecase(re.sub(r'\s+', ' ', narration.strip()))
+    return value
+
+
 # TODO: until the beancount.core.data type hints are working, this isn't very
 # useful.
 # Eventually, all extract() methods should get updated to return any directives
@@ -148,7 +154,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
             date=date,
             flag=flags.FLAG_OKAY,
             payee=titlecase.titlecase(payee.strip()) if payee else None,
-            narration=titlecase.titlecase(narration.strip()),
+            narration=_normalize_narration(narration),
             tags=data.EMPTY_SET,
             links=data.EMPTY_SET,
             postings=postings or [],

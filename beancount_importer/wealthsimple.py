@@ -54,36 +54,36 @@ class WealthsimpleImporter(Importer):
     def _parse_stock_row(
         self, date: datetime.datetime, row: dict[str, Any]
     ) -> list[data.Posting]:
-        price = self._amount(row['unit_price'], row['currency'])
+        symbol = row['symbol'].replace('.', '')
+        amt = self._amount(row['quantity'], symbol)
+
+        # Corporate actions (splits, consolidations) only adjust the share
+        # count and carry no cash leg, price or currency.
+        if not row['net_cash_amount']:
+            return [self._posting(f'{self.account_name}:{symbol}', amt)]
+
+        currency = row['currency']
+        price = self._amount(row['unit_price'], currency)
 
         # When selling, we want to pick the cost basis
         kind = row['activity_sub_type']
         date_ = date.date() if kind == 'BUY' else None
         label = price if kind == 'BUY' else None
 
-        symbol = row['symbol'].replace('.', '')
         cost = position.Cost(
             row['unit_price'],
-            row['currency'],
+            currency,
             date_,  # type: ignore[arg-type]
             label,  # type: ignore[arg-type]
         )
-        amt = self._amount(row['quantity'], symbol)
-        total = self._amount(row['net_cash_amount'], row['currency'])
+        total = self._amount(row['net_cash_amount'], currency)
 
-        postings = [
+        return [
             self._posting(
                 f'{self.account_name}:{symbol}', amt, price=price, cost=cost
             ),
-            self._posting(f'{self.account_name}:{row["currency"]}', total),
+            self._posting(f'{self.account_name}:{currency}', total),
         ]
-        if kind == 'SELL':
-            postings.append(
-                self._posting(
-                    f'{self.account_name}:{row["currency"]}:PnL', None
-                )
-            )
-        return postings
 
     def _extract_from_row(
         self, row: dict[str, Any], meta: data.Meta
@@ -96,28 +96,24 @@ class WealthsimpleImporter(Importer):
             amt = self._amount(row['amount'])  # TODO: currency?
         except KeyError:
             # synthetic data from split()
-            date = datetime.datetime.fromisoformat(row['transaction_date'])
+            date = datetime.datetime.fromisoformat(row['effective_date'])
             narration = row['activity_type']
 
             kind = row['activity_sub_type']
-            if kind:
+            if kind and kind != '-':
                 narration = f'{narration}: {kind}'
 
             symbol = row['symbol'].replace('.', '')
-            if symbol:
-                # stock trade
-                direction = row['direction']
-                if direction:
-                    details = ' '.join((symbol, direction.lower()))
-                    narration = f'{narration} ({details})'
-                    postings = self._parse_stock_row(date, row)
-                else:
-                    narration = f'{narration} ({symbol})'
-                    amt = self._amount(row['quantity'], symbol)
-                    postings = [
-                        self._posting(f'{self.account_name}:{symbol}', amt)
-                    ]
+            # A direction (LONG/SHORT) marks a change in a share position;
+            # everything else (dividends, interest, tax, transfers) is cash,
+            # even when it references a symbol.
+            if row['direction']:
+                details = ' '.join((symbol, row['direction'].lower()))
+                narration = f'{narration} ({details})'
+                postings = self._parse_stock_row(date, row)
             else:
+                if symbol:
+                    narration = f'{narration} ({symbol})'
                 amt = self._amount(row['net_cash_amount'], row['currency'])
 
         postings = postings or [self._posting(self.account_name, amt)]

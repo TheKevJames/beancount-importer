@@ -4,7 +4,6 @@ import decimal
 import enum
 import os
 import re
-from collections.abc import Callable
 from collections.abc import Iterable
 from collections.abc import Iterator
 from typing import Any
@@ -207,11 +206,3 @@ class Importer(importer.Importer):  # type: ignore[misc]
         # TODO: print proposed data.Balance() record at end?
         # It should be manually checked anyway, so probably a bad idea to emit
         return list(self._add_postings(self._filter(self._extract(fname))))
-
-    @classmethod
-    def howto(
-        cls, query: Callable[[str], str], accounts: list[str]
-    ) -> Iterator[str]:
-        _ = accounts
-        _ = query
-        assert False, 'missing howto'

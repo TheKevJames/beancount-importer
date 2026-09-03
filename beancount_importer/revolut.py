@@ -1,6 +1,4 @@
 import re
-from collections.abc import Callable
-from collections.abc import Iterator
 from typing import Any
 
 from beancount.core import data
@@ -40,14 +38,3 @@ class RevolutImporter(Importer):
             narration=narration,
             postings=[self._posting(self.account_name, amt)],
         )
-
-    @classmethod
-    def howto(
-        cls, query: Callable[[str], str], accounts: list[str]
-    ) -> Iterator[str]:
-        for account in accounts:
-            yield f'Select account {account}'
-            yield 'Statement > Excel'
-
-            date = query(account)
-            yield f'Query date from >={date}'

@@ -1,7 +1,5 @@
 import datetime
 import re
-from collections.abc import Callable
-from collections.abc import Iterator
 from typing import Any
 
 from beancount.core import data
@@ -38,17 +36,6 @@ class WealthsimpleCreditCardImporter(Importer):
             narration=narration,
             postings=[self._posting(self.account_name, -amt)],
         )
-
-    @classmethod
-    def howto(
-        cls, query: Callable[[str], str], accounts: list[str]
-    ) -> Iterator[str]:
-        for account in accounts:
-            yield f'Select account {account}'
-            yield 'Me > Documents > Performance Statements'
-
-            date = query(account)
-            yield f'Download statements from >={date}'
 
 
 class WealthsimpleImporter(Importer):
@@ -132,22 +119,3 @@ class WealthsimpleImporter(Importer):
         return self._transaction(
             meta=meta, date=date.date(), narration=narration, postings=postings
         )
-
-    @classmethod
-    def howto(
-        cls, query: Callable[[str], str], accounts: list[str]
-    ) -> Iterator[str]:
-        for account in accounts:
-            yield f'Select account {account}'
-            yield 'Statement > Excel'
-
-            date = query(account)
-            yield f'Query date from >={date}'
-
-        yield 'Me > Documents > Performance Statements'
-
-        date = min(query(account) for account in accounts)
-        yield f'Download all Checking records from >={date}'
-        yield 'Recent Activity > View All > Download'
-        yield f'Download all Investment records from >={date}'
-        yield 'bean-import split ~/Downloads'

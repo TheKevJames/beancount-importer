@@ -1,7 +1,5 @@
 import datetime
 import re
-from collections.abc import Callable
-from collections.abc import Iterator
 from typing import Any
 
 from beancount.core import data
@@ -65,15 +63,3 @@ class RemitbeeImporter(Importer):
         return self._transaction(
             meta=meta, date=date.date(), narration=narration, postings=postings
         )
-
-    @classmethod
-    def howto(
-        cls, query: Callable[[str], str], accounts: list[str]
-    ) -> Iterator[str]:
-        for account in accounts:
-            yield f'Select account {account}'
-            yield 'Dashboard > Your Transactions > View All'
-
-            date = query(account)
-            yield f'Filter date from >={date}, include Balance'
-            yield 'Download > CSV File'

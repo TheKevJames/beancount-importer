@@ -8,7 +8,6 @@ from typing import cast
 
 import beangulp  # type: ignore[import-untyped]
 import click
-import sh
 from beancount.core import data
 
 from .activobank import ActivobankImporter
@@ -125,6 +124,7 @@ def run(ctx: click.Context) -> None:
     ctx.obj = Ctx()
 
 
+# TODO: consider renaming to "pre-process"?
 @run.command()
 @click.argument('src')
 def split(src: str) -> None:  # noqa: C901
@@ -201,52 +201,6 @@ def split(src: str) -> None:  # noqa: C901
                 for lastfour, accid in accounts.items():
                     if lastfour not in {x['lastfour'] for x in definitions}:
                         click.echo(f'No definition for: {accid}', err=True)
-
-
-@run.command()
-@click.argument('importer', type=click.Choice(list(IMPORTERS.keys())))
-def howto(importer: str) -> None:
-    """Print howto guide for a specific account type."""
-    if not sh.which('bean-query'):
-        click.echo('Missing dependency bean-query.', err=True)
-        click.echo('Try `pipx install beanquery`.', err=True)
-        raise click.Abort()
-
-    query_cmd = sh.Command('bean-query')
-
-    def query(account: str) -> str:
-        # TODO: can LAST include balance statements?
-        expr = f'SELECT LAST(date) WHERE account="{account}"'
-        date: str = query_cmd('index.beancount', expr).splitlines()[-1]
-        return date
-
-    try:
-        config = Ctx.load_config()[importer]
-    except KeyError as e:
-        click.echo(f'ERROR: Invalid importer {importer}')
-        raise click.Abort() from e
-
-    try:
-        accounts = [x['account'] for x in config]
-    except KeyError as e:
-        click.echo('ERROR: Malformed config (missing "account" key)')
-        raise click.Abort() from e
-
-    try:
-        lines = IMPORTERS[importer].howto(query, accounts)
-    except Exception as e:
-        click.echo(f'ERROR: {e}')
-        raise click.Abort() from e
-
-    i = 1
-    for line in lines:
-        click.echo(f'{i}. {line}')
-        i += 1
-
-    click.echo(f'{i}. bean-import identify -xv ~/Downloads')
-    click.echo(f'{i + 1}. bean-import extract -xe index.beancount ~/Downloads')
-    click.echo(f'{i + 2}. bean-import archive -o docs ~/Downloads')
-    click.echo(f'{i + 3}. bean-check index.beancount')
 
 
 run.add_command(beangulp._archive)  # pylint: disable=protected-access

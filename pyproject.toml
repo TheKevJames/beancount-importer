@@ -18,6 +18,7 @@ dependencies = [
     "python-dateutil>=2.0.0,<3.0.0",
     "sh>=2.0.0,<3.0.0",
     "titlecase>=2.0.0,<3.0.0",
+    "xlrd (>=2.0.0,<3.0.0)",
 ]
 
 [project.urls]
@@ -39,6 +40,7 @@ module = [
     'py_pdf_parser.*',
     'sh.*',
     'titlecase.*',
+    'xlrd.*',
 ]
 ignore_missing_imports = true
 

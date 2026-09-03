@@ -1,13 +1,10 @@
-import collections
-import io
+import datetime
 import re
 from collections.abc import Iterator
 from typing import Any
 
-import py_pdf_parser.loaders
-import py_pdf_parser.tables
+import xlrd
 from beancount.core import data
-from dateutil.parser import parse
 
 from .utils import Importer
 
@@ -15,18 +12,14 @@ from .utils import Importer
 class SantanderImporter(Importer):
     _default_currency = 'EUR'
     _require_lastfour = True
-    _regex_fname = re.compile(r'^EXTCON\d{8}0001\d+(\d{4}).pdf$')
-
-    def _parse_amount(self, row: dict[str, Any]) -> str:
-        amt: str = row['Amount'].replace('.', '').replace(',', '.')
-        return amt
+    _regex_fname = re.compile(r'^descarga\.(\w+)\.xls$')
 
     def _extract_from_row(
         self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
-        date = parse(row['Date']).date()
+        date = datetime.datetime.strptime(row['Date'], '%d-%m-%Y').date()
         narration = row['Description']
-        amt = self._amount(self._parse_amount(row))
+        amt = self._amount(str(row['Amount']))
 
         return self._transaction(
             meta=meta,
@@ -35,72 +28,34 @@ class SantanderImporter(Importer):
             postings=[self._posting(self.account_name, amt)],
         )
 
-    def _extract(self, fname: str) -> Iterator[data.Transaction]:  # noqa: C901
-        # pylint: disable=too-many-locals
-        year = fname.rsplit('/', 1)[-1].replace('EXTCON', '')[:4]
-        with open(fname, 'rb') as f:
-            header_bytes = f.read(27)
-            if header_bytes.startswith(b'\xac\xed\x00\x05'):
-                # Handle Java serialized byte array wrapping the PDF
-                f.seek(0)
-                content = f.read()
-                pdf_start = content.find(b'%PDF-')
-                if pdf_start != -1:
-                    iostream = io.BytesIO(content[pdf_start:])
-                    doc = py_pdf_parser.loaders.load(iostream)
-                else:
-                    f.seek(0)
-                    doc = py_pdf_parser.loaders.load(f)
-            else:
-                f.seek(0)
-                doc = py_pdf_parser.loaders.load(f)
-
-        header = doc.elements.filter_by_text_equal(
-            'Detalhe de Movimentos da Conta à Ordem'
-        )[-1]
-        footer = doc.elements.filter_by_text_contains(
-            'Saldo Disponível Final'
-        )[0]
-        body = doc.elements.between(header, footer)
-
-        rows = collections.defaultdict(list)
-        for el in body:
-            # sidebar
-            if el.bounding_box.x0 < 20:
+    def _find_columns(self, ws: Any) -> tuple[int, int, int, int]:
+        for r in range(ws.nrows):
+            cells = [str(ws.cell_value(r, c)).strip() for c in range(ws.ncols)]
+            dates = [c for c, v in enumerate(cells) if v.startswith('Data ')]
+            amounts = [
+                c for c, v in enumerate(cells) if v.startswith('Montante')
+            ]
+            if not dates or 'Descrição' not in cells or not amounts:
                 continue
-            key = round(el.bounding_box.y1, 1)
-            rows[key].append(el)
+            return r, dates[0], cells.index('Descrição'), amounts[0]
+
+        raise ValueError('malformed workbook')
+
+    def _extract(self, fname: str) -> Iterator[data.Transaction]:
+        ws = xlrd.open_workbook(fname).sheet_by_index(0)
+        header_row, date_col, desc_col, amt_col = self._find_columns(ws)
 
         index = 0
-        for key in sorted(rows.keys(), reverse=True):
-            xs = rows[key]
-            try:
-                dates_el = next(x for x in xs if 30 < x.bounding_box.x0 < 55)
-                desc_el = next(x for x in xs if 65 < x.bounding_box.x0 < 90)
-                amt_el = next(x for x in xs if 450 < x.bounding_box.x0 < 490)
-            except StopIteration:
+        for r in range(header_row + 1, ws.nrows):
+            date = str(ws.cell_value(r, date_col)).strip()
+            if not date:
                 continue
 
-            dates = dates_el.text().split('\n')
-            if len(dates) == 0 or dates[0] == 'Data':
-                continue
-
-            descs = desc_el.text().split('\n')
-            amts = amt_el.text().split('\n')
-
-            for d, desc, a in zip(dates, descs, amts):
-                d = d.strip()
-                if not d or len(d) != 5:
-                    continue
-
-                if desc.startswith(d):
-                    desc = desc[len(d) :].strip()
-
-                row = {
-                    'Date': f'{year}-{d[3:5]}-{d[0:2]}',
-                    'Description': desc,
-                    'Amount': a,
-                }
-                meta = data.new_metadata(fname, index)
-                yield self._extract_from_row(row, meta)
-                index += 1
+            row = {
+                'Date': date,
+                'Description': str(ws.cell_value(r, desc_col)).strip(),
+                'Amount': ws.cell_value(r, amt_col),
+            }
+            meta = data.new_metadata(fname, index)
+            yield self._extract_from_row(row, meta)
+            index += 1

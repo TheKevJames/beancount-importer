@@ -25,6 +25,13 @@ def _normalize_narration(narration: str) -> str:
     return value
 
 
+def _normalize_number(dec: decimal.Decimal) -> decimal.Decimal:
+    exponent = dec.as_tuple().exponent
+    if isinstance(exponent, int) and exponent > -2:
+        return dec.quantize(decimal.Decimal('0.01'))
+    return dec
+
+
 # TODO: until the beancount.core.data type hints are working, this isn't very
 # useful.
 # Eventually, all extract() methods should get updated to return any directives
@@ -136,7 +143,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
         assert currency, 'currency must be set for transaction'
 
         dec = number.D(raw) if isinstance(raw, str) else raw
-        return amount.Amount(dec, currency)
+        return amount.Amount(_normalize_number(dec), currency)
 
     def _transaction(
         self,

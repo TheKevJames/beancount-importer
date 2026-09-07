@@ -145,11 +145,12 @@ class Importer(importer.Importer):  # type: ignore[misc]
         narration: str,
         payee: str | None = None,
         postings: list[data.Posting] | None = None,
+        flag: data.Flag = flags.FLAG_OKAY,
     ) -> data.Transaction:
         return data.Transaction(
             meta=meta,
             date=date,
-            flag=flags.FLAG_OKAY,
+            flag=flag,
             payee=titlecase.titlecase(payee.strip()) if payee else None,
             narration=_normalize_narration(narration),
             tags=data.EMPTY_SET,
@@ -206,7 +207,22 @@ class Importer(importer.Importer):  # type: ignore[misc]
         )
         return self._posting(account, units, flag=flags.FLAG_WARNING)
 
+    @staticmethod
+    def _defers_balancing(posting: data.Posting) -> bool:
+        """
+        Whether a posting's balance is left for Beancount to book.
+
+        Postings with no amount (an interpolation placeholder) or with a cost
+        (a securities lot) have no weight this importer can compute correctly,
+        so residual balancing must be deferred to booking (bean-check) rather
+        than forced here.
+        """
+        return posting.units is None or posting.cost is not None
+
     def _add_posting(self, x: data.Transaction) -> data.Transaction:
+        if any(self._defers_balancing(p) for p in x.postings):
+            return x
+
         residual = interpolate.compute_residual(x.postings)  # type: ignore
         for pos in residual.get_positions():
             x.postings.append(self._categorize(x, -pos.units))

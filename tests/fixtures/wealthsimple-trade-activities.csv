@@ -1,0 +1,12 @@
+effective_date,effective_time,settlement_date,account_id,account_type,activity_type,activity_sub_type,description,direction,symbol,name,currency,quantity,unit_price,commission,net_cash_amount
+2026-02-02,14:03:00Z,2026-02-04,non-registered-AAAA,cash,MoneyMovement,TRANSFER,Contribution,,,,CAD,5000,,,5000
+2026-02-03,15:22:00Z,2026-02-05,non-registered-AAAA,cash,Trade,BUY,Purchase,LONG,VFV,Vanguard S&P 500,CAD,20,150.00,0,-3000
+2026-02-10,13:00:00Z,2026-02-12,non-registered-AAAA,cash,Dividend,,Distribution,,VFV,Vanguard S&P 500,CAD,12.5,,,12.5
+2026-02-15,16:45:00Z,2026-02-17,non-registered-AAAA,cash,Dividend,Dividend Reinvested,Reinvestment,LONG,VFV,Vanguard S&P 500,CAD,0.08,151.20,0,-12.10
+2026-03-01,17:10:00Z,2026-03-03,non-registered-AAAA,cash,Trade,SELL,Disposal,LONG,VFV,Vanguard S&P 500,CAD,-5,160.00,0,800
+2026-03-02,09:30:00Z,2026-03-04,non-registered-AAAA,cash,Interest,,Interest earned,,,,CAD,0.35,,,0.35
+2026-03-03,10:15:00Z,2026-03-05,non-registered-AAAA,cash,Tax,NRT,Non-resident tax,,,,USD,-1.14,,,-1.14
+2026-03-10,11:00:00Z,2026-03-12,non-registered-AAAA,cash,CorporateAction,CONSOLIDATION,Share consolidation,LONG,QQD,Global X Bear,,-50,,,
+2026-03-11,11:05:00Z,2026-03-13,non-registered-AAAA,cash,ReturnOfCapital,,Return of capital,LONG,ZGQ,BMO Global Quality,CAD,-2.5,,,-2.5
+2026-03-12,11:10:00Z,2026-03-14,non-registered-AAAA,cash,FxExchange,,Currency exchange,,,,USD,100,,,100
+2026-03-13,11:20:00Z,2026-03-15,non-registered-AAAA,cash,InternalSecurityTransfer,,Security transfer,,QCOM,Qualcomm,USD,10,,,1500

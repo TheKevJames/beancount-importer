@@ -14,7 +14,8 @@ class AmexImporter(Importer):
     def _extract_from_row(
         self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
-        # TODO: check if splitting is necessary
+        # TODO: confirm whether the Date column can carry a time component;
+        # if it only ever holds the day, this split(' ')[0] is unnecessary.
         date = parse(row['Date'].split(' ')[0]).date()
         # TODO: parse out payee vs narration?
         narration = row['Description']

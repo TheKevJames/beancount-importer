@@ -93,7 +93,8 @@ class WealthsimpleImporter(Importer):
             # monthly statement
             date = datetime.datetime.fromisoformat(row['date'])
             narration = row['description']
-            amt = self._amount(row['amount'])  # TODO: currency?
+            # TODO: read currency from the row rather than defaulting
+            amt = self._amount(row['amount'])
         except KeyError:
             # synthetic data from split()
             date = datetime.datetime.fromisoformat(row['effective_date'])

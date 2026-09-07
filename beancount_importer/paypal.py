@@ -3,7 +3,6 @@ import datetime
 import re
 from collections.abc import Iterable
 from collections.abc import Iterator
-from typing import Any
 from typing import cast
 
 import titlecase
@@ -24,21 +23,15 @@ class PaypalImporter(Importer):
     # pylint: disable=abstract-method
     _regex_fname = re.compile(r'Download.CSV')
 
-    @staticmethod
-    def _get_date(row: dict[str, Any]) -> str:
-        # TODO: wtf
-        value: str | None = row.get('\ufeff"Date"')
-        if value is not None:
-            return value
-        return cast(str, row['Date'])
-
     def _extractz(self, fname: str) -> Iterator[MetaTuple]:
-        with open(fname, encoding='utf-8') as f:
+        # PayPal CSVs are UTF-8 with a BOM; utf-8-sig strips it so the first
+        # header parses as 'Date' rather than '\ufeff"Date"'.
+        with open(fname, encoding='utf-8-sig') as f:
             for index, row in enumerate(csv.DictReader(f)):
                 if row['Status'] != 'Completed':
                     continue
 
-                date = parse(self._get_date(row)).date()
+                date = parse(row['Date']).date()
                 kind = titlecase.titlecase(row['Type'])
                 name = titlecase.titlecase(row['Name'])
                 amt = amount.Amount(D(row['Amount']), row['Currency'])

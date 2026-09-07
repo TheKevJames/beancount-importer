@@ -51,3 +51,15 @@ labels:
 
 branches:
   - name: master
+    protection:
+      required_status_checks:
+        strict: true
+        contexts:
+          - lint
+          - test (3.11)
+          - test (3.12)
+          - test (3.13)
+          - test (3.14)
+      required_pull_request_reviews: null
+      enforce_admins: false
+      restrictions: null

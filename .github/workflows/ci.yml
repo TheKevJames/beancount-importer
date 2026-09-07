@@ -83,11 +83,19 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
+      - id: notes
+        uses: orhun/git-cliff-action@v4.9.0
+        with:
+          config: cliff.toml
+          args: --latest
       - uses: softprops/action-gh-release@v3.0.3
         with:
-          generate_release_notes: true
+          body: ${{ steps.notes.outputs.content }}
           files: dist/*

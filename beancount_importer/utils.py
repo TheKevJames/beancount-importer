@@ -32,14 +32,6 @@ def _normalize_number(dec: decimal.Decimal) -> decimal.Decimal:
     return dec
 
 
-# TODO: until the beancount.core.data type hints are working, this isn't very
-# useful.
-# Eventually, all extract() methods should get updated to return any directives
-# Directive = (data.Balance | data.Close | data.Commodity | data.Custom
-#              | data.Document | data.Event | data.Note | data.Open | data.Pad
-#              | data.Price | data.Query | data.Transaction)
-
-
 class AccountPatternTarget(enum.StrEnum):
     BOTH = 'both'
     EITHER = 'either'
@@ -229,7 +221,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
 
     def extract(
         self, fname: str, _existing: list[data.Transaction]
-    ) -> list[data.Transaction]:
+    ) -> list[data.Directive]:
         # TODO: print proposed data.Balance() record at end?
         # It should be manually checked anyway, so probably a bad idea to emit
         return list(self._add_postings(self._filter(self._extract(fname))))

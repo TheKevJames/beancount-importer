@@ -137,5 +137,5 @@ class PaypalImporter(Importer):
 
     def extract(
         self, fname: str, _existing: list[data.Transaction]
-    ) -> list[data.Transaction]:
+    ) -> list[data.Directive]:
         return list(self._merge(self._group(self._extractz(fname))))

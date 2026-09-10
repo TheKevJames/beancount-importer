@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: actions/setup-python@v7.0.0
+      - uses: astral-sh/setup-uv@v6.0.1
         with:
           python-version: '3.14'
+      - run: uv sync --group dev
       - uses: j178/prek-action@v3.0.0
         with:
           prek-version: 0.5.2

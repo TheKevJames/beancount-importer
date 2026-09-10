@@ -8,17 +8,17 @@ from typing import cast
 import titlecase
 from beancount.core import amount
 from beancount.core import data
-from beancount.core.number import D
-from dateutil.parser import parse
+from beancount.core import number
+from dateutil import parser
 
-from .utils import Importer
+from . import utils
 
 MetaTuple = tuple[
     datetime.datetime, dict[str, int | str], str, str, amount.Amount
 ]
 
 
-class PaypalImporter(Importer):
+class PaypalImporter(utils.Importer):
     # TODO: refactor to reuse some base class stuff
     # pylint: disable=abstract-method
     _regex_fname = re.compile(r'Download.CSV')
@@ -31,10 +31,10 @@ class PaypalImporter(Importer):
                 if row['Status'] != 'Completed':
                     continue
 
-                date = parse(row['Date']).date()
+                date = parser.parse(row['Date']).date()
                 kind = titlecase.titlecase(row['Type'])
                 name = titlecase.titlecase(row['Name'])
-                amt = amount.Amount(D(row['Amount']), row['Currency'])
+                amt = amount.Amount(number.D(row['Amount']), row['Currency'])
 
                 meta = data.new_metadata(fname, index)
                 yield cast(MetaTuple, (date, meta, name, kind, amt))
@@ -136,6 +136,6 @@ class PaypalImporter(Importer):
             yield tx
 
     def extract(
-        self, fname: str, _existing: list[data.Transaction]
+        self, filepath: str, existing: data.Entries
     ) -> list[data.Directive]:
-        return list(self._merge(self._group(self._extractz(fname))))
+        return list(self._merge(self._group(self._extractz(filepath))))

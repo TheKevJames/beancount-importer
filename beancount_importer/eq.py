@@ -6,12 +6,12 @@ from typing import cast
 import py_pdf_parser.loaders
 import py_pdf_parser.tables
 from beancount.core import data
-from dateutil.parser import parse
+from dateutil import parser
 
-from .utils import Importer
+from . import utils
 
 
-class EqImporter(Importer):
+class EqImporter(utils.Importer):
     _default_currency = 'CAD'
     _regex_fname = re.compile(r'(\d+) .* Statement.pdf')
 
@@ -24,7 +24,7 @@ class EqImporter(Importer):
         self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
         # TODO: get year from filename?
-        date = parse(row['Date']).date()
+        date = parser.parse(row['Date']).date()
         # TODO: parse out payee vs narration?
         narration = row['Description']
         amt = self._amount(self._parse_amount(row))

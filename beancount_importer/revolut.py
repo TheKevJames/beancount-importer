@@ -2,12 +2,12 @@ import re
 from typing import Any
 
 from beancount.core import data
-from dateutil.parser import parse
+from dateutil import parser
 
-from .utils import Importer
+from . import utils
 
 
-class RevolutImporter(Importer):
+class RevolutImporter(utils.Importer):
     _default_currency = 'EUR'
     _require_lastfour = True
     _regex_fname = re.compile(
@@ -18,13 +18,13 @@ class RevolutImporter(Importer):
         self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction:
         try:
-            date = parse(row['Data de Conclusão'].strip()).date()
+            date = parser.parse(row['Data de Conclusão'].strip()).date()
             # TODO: parse out payee vs narration?
             narration = row['Descrição'].strip()
             amt_raw = row['Montante'].replace("'", '').strip()
             amt = self._amount(amt_raw, row['Moeda'])
         except KeyError:
-            date = parse(row['Completed Date'].strip()).date()
+            date = parser.parse(row['Completed Date'].strip()).date()
             # TODO: parse out payee vs narration?
             narration = row['Description'].strip()
             amt_raw = row['Amount'].replace("'", '').strip()

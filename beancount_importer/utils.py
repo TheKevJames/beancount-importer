@@ -17,7 +17,7 @@ from beancount.core import flags
 from beancount.core import interpolate
 from beancount.core import number
 from beancount.core import position
-from beangulp import importer  # type: ignore[import-untyped]
+from beangulp import importer
 
 
 def _normalize_narration(narration: str) -> str:
@@ -84,7 +84,7 @@ class AccountPattern:
         return False
 
 
-class Importer(importer.Importer):  # type: ignore[misc]
+class Importer(importer.Importer):
     _default_currency: data.Currency | None = None
     _require_lastfour: bool = False
     _regex_fname: re.Pattern[str]
@@ -109,21 +109,21 @@ class Importer(importer.Importer):  # type: ignore[misc]
         if self._require_lastfour and self.lastfour is None:
             raise ValueError('lastfour="xxxx" must be provided')
 
-    def account(self, _fname: str) -> str:
+    def account(self, filepath: str) -> str:
         return self.account_name
 
-    def date(self, fname: str) -> datetime.datetime | None:
+    def date(self, filepath: str) -> datetime.datetime | None:
         try:
             # TODO: pass in existing somehow
-            value = max(x.date for x in self.extract(fname, []))
+            value = max(x.date for x in self.extract(filepath, []))
         except ValueError:
             # why are you filing this, anyway?
             return None
 
         return cast(datetime.datetime, value)
 
-    def identify(self, fname: str) -> bool:
-        match = self._regex_fname.match(os.path.basename(fname))
+    def identify(self, filepath: str) -> bool:
+        match = self._regex_fname.match(os.path.basename(filepath))
         if not match:
             return False
         return self.lastfour is None or self.lastfour == match.group(1)
@@ -223,7 +223,7 @@ class Importer(importer.Importer):  # type: ignore[misc]
         if any(self._defers_balancing(p) for p in x.postings):
             return x
 
-        residual = interpolate.compute_residual(x.postings)  # type: ignore
+        residual = interpolate.compute_residual(x.postings)
         for pos in residual.get_positions():
             x.postings.append(self._categorize(x, -pos.units))
 
@@ -236,8 +236,8 @@ class Importer(importer.Importer):  # type: ignore[misc]
             yield self._add_posting(x)
 
     def extract(
-        self, fname: str, _existing: list[data.Transaction]
+        self, filepath: str, existing: data.Entries
     ) -> list[data.Directive]:
         # TODO: print proposed data.Balance() record at end?
         # It should be manually checked anyway, so probably a bad idea to emit
-        return list(self._add_postings(self._filter(self._extract(fname))))
+        return list(self._add_postings(self._filter(self._extract(filepath))))

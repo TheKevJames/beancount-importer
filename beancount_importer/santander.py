@@ -4,12 +4,13 @@ from collections.abc import Iterator
 from typing import Any
 
 import xlrd
+import xlrd.sheet
 from beancount.core import data
 
-from .utils import Importer
+from . import utils
 
 
-class SantanderImporter(Importer):
+class SantanderImporter(utils.Importer):
     _default_currency = 'EUR'
     _require_lastfour = True
     _regex_fname = re.compile(r'^descarga\.(\w+)\.xls$')
@@ -28,7 +29,7 @@ class SantanderImporter(Importer):
             postings=[self._posting(self.account_name, amt)],
         )
 
-    def _find_columns(self, ws: Any) -> tuple[int, int, int, int]:
+    def _find_columns(self, ws: xlrd.sheet.Sheet) -> tuple[int, int, int, int]:
         for r in range(ws.nrows):
             cells = [str(ws.cell_value(r, c)).strip() for c in range(ws.ncols)]
             dates = [c for c, v in enumerate(cells) if v.startswith('Data ')]

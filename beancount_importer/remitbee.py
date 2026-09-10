@@ -5,10 +5,10 @@ from typing import Any
 from beancount.core import data
 from beancount.core import flags
 
-from .utils import Importer
+from . import utils
 
 
-class RemitbeeImporter(Importer):
+class RemitbeeImporter(utils.Importer):
     _require_lastfour = False
     _regex_fname = re.compile(
         r'^(balance|transaction)_history_[-\w\d_ ]+.csv$'

@@ -7,52 +7,53 @@ license = { text = "MIT" }
 readme = "README.rst"
 
 authors = [
-    { name = "Kevin James", email = "beancount-importer@thekev.in>" },
+    { name = "Kevin James", email = "beancount-importer@thekev.in" },
 ]
 
 dependencies = [
     "beancount>=3.0.0,<4.0.0",
     "beangulp>=0.2.0,<0.3.0",
+    "click>=8.0.0,<9.0.0",
     "openpyxl>=3.0.0,<4.0.0",
     "py-pdf-parser>=0.10.0,<0.14.0",
     "python-dateutil>=2.0.0,<3.0.0",
     "sh>=2.0.0,<3.0.0",
     "titlecase>=2.0.0,<3.0.0",
-    "xlrd (>=2.0.0,<3.0.0)",
+    "xlrd>=2.0.0,<3.0.0",
 ]
 
 [project.urls]
 repository = "https://github.com/TheKevJames/beancount-importer"
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-package-mode = true
-packages = [
-    { include = "beancount_importer", format = ["sdist", "wheel"] },
-]
-
-[tool.poetry.scripts]
+[project.scripts]
 bean-import = "beancount_importer.cli:run"
 
-[[tool.mypy.overrides]]
-module = [
-    'beancount.core.*',
-    'py_pdf_parser.*',
-    'sh.*',
-    'titlecase.*',
-    'xlrd.*',
-]
-ignore_missing_imports = true
-
-[[tool.poetry.source]]
-name = "pypi"
-priority = "primary"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.uv]
+# py-pdf-parser hard-pins pdfminer.six==20220524, which carries CVE-2025-64512
+# and CVE-2025-70559. Force a patched release; the loader/table APIs we use are
+# unchanged across these versions.
+override-dependencies = ["pdfminer.six>=20251230"]
 
 [dependency-groups]
 dev = [
-    "pytest (==9.1.1)"
+    "flake8-broken-line==1.0.0",
+    "flake8-complicated-walrus==2.1.0",
+    "flake8-import-restrictions==2.1",
+    "flake8-requirements==2.3.0",
+    "flake8==7.3.0",
+    "pylint==4.0.8",
+    "pytest==9.1.1",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["beancount_importer"]
+
+[tool.ty.rules]
+dynamic-function-decorator-return = "error"
+missing-type-argument = "error"
+possibly-unresolved-reference = "warn"
+unsound-return-statement = "error"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

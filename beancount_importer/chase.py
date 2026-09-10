@@ -2,12 +2,12 @@ import re
 from typing import Any
 
 from beancount.core import data
-from dateutil.parser import parse
+from dateutil import parser
 
-from .utils import Importer
+from . import utils
 
 
-class ChaseImporter(Importer):
+class ChaseImporter(utils.Importer):
     _default_currency = 'USD'
     _require_lastfour = True
     _regex_fname = re.compile(
@@ -34,23 +34,28 @@ class ChaseImporter(Importer):
     def _parse_description(self, description: str) -> tuple[str | None, str]:
         match = self.regex_desc_full.search(description)
         if match:
-            return match.group(1), match.group(2)
+            payee: str = match.group(1)
+            narration: str = match.group(2)
+            return payee, narration
         match = self.regex_desc_outbound_tx.search(description)
         if match:
-            return match.group(1), description
+            payee_out: str = match.group(1)
+            return payee_out, description
         match = self.regex_desc_inbound_tx.search(description)
         if match:
-            return match.group(1), description
+            payee_in: str = match.group(1)
+            return payee_in, description
         match = self.regex_desc_generic.search(description)
         if match:
-            return None, match.group(1)
+            generic: str = match.group(1)
+            return None, generic
         return None, description
 
     def _extract_from_row(
         self, row: dict[str, Any], meta: data.Meta
     ) -> data.Transaction | None:
         post_date = row.get('Posting Date') or row['Post Date']
-        date = parse(post_date).date()
+        date = parser.parse(post_date).date()
         payee, narration = self._parse_description(row['Description'])
         amt = self._amount(row['Amount'])
         # TODO: move to base class

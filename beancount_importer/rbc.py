@@ -2,12 +2,12 @@ import re
 from typing import Any
 
 from beancount.core import data
-from dateutil.parser import parse
+from dateutil import parser
 
-from .utils import Importer
+from . import utils
 
 
-class RbcImporter(Importer):
+class RbcImporter(utils.Importer):
     _default_currency = 'CAD'
     _require_lastfour = True
     # N.B. the csv file contains data for *all* accounts, but beangulp doesn't
@@ -24,7 +24,7 @@ class RbcImporter(Importer):
         if not row['Account Number'].endswith(self.lastfour):
             return None
 
-        date = parse(row['Transaction Date']).date()
+        date = parser.parse(row['Transaction Date']).date()
         payee: str | None = row['Description 2'].strip() or None
         narration = row['Description 1']
         amt = self._amount(row['CAD$'])

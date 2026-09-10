@@ -1,13 +1,13 @@
 import pathlib
 
 from beancount import loader
+from beancount.core import amount
 from beancount.core import data
+from beancount.core import number
 from beancount.core import position
-from beancount.core.amount import Amount
-from beancount.core.number import D
 from beancount.parser import printer
 
-from beancount_importer.wealthsimple import WealthsimpleImporter
+from beancount_importer import wealthsimple
 
 FIXTURES = pathlib.Path(__file__).parent / 'fixtures'
 ACCOUNT = 'Assets:CA:Wealthsimple:Trade:Stocks'
@@ -15,7 +15,7 @@ FIXTURE = 'wealthsimple-trade-activities.csv'
 
 
 def _extract(account: str = ACCOUNT) -> list[data.Directive]:
-    return WealthsimpleImporter(account, lastfour='7K05').extract(
+    return wealthsimple.WealthsimpleImporter(account, lastfour='7K05').extract(
         str(FIXTURES / FIXTURE), []
     )
 
@@ -40,8 +40,8 @@ def _cost(txn: data.Transaction, account_fragment: str) -> position.CostSpec:
     return cost
 
 
-def _qty(txn: data.Transaction, account_fragment: str) -> object:
-    units: Amount | None = _posting(txn, account_fragment).units
+def _qty(txn: data.Transaction, account_fragment: str) -> number.Decimal:
+    units: amount.Amount | None = _posting(txn, account_fragment).units
     assert units is not None and units.number is not None
     return units.number
 
@@ -51,7 +51,7 @@ def test_buy_carries_explicit_total_cost() -> None:
     cost = _cost(buy, ':VFV')
     # {# TOTAL CUR}: explicit currency, whole basis, never quoted/inferred.
     assert cost.number_per is None
-    assert cost.number_total == D('3000')
+    assert cost.number_total == number.D('3000')
     assert cost.currency == 'CAD'
     # No residual leaked to a flagged default account.
     assert all('Unknown' not in p.account for p in buy.postings)
@@ -59,15 +59,15 @@ def test_buy_carries_explicit_total_cost() -> None:
 
 def test_drip_books_as_a_buy() -> None:
     drip = _txn(_extract(), 'Dividend Reinvested')
-    assert _qty(drip, ':VFV') > 0  # type: ignore[operator]
+    assert _qty(drip, ':VFV') > 0
     cost = _cost(drip, ':VFV')
-    assert cost.number_total == D('12.10')
+    assert cost.number_total == number.D('12.10')
     assert cost.currency == 'CAD'
 
 
 def test_sell_defers_lot_to_fifo_and_books_pnl() -> None:
     sell = _txn(_extract(), 'SELL')
-    assert _qty(sell, ':VFV') < 0  # type: ignore[operator]
+    assert _qty(sell, ':VFV') < 0
     # `{}` empty cost -> FIFO booking picks the lot at disposal.
     assert '-5.00 VFV {} @ 160.00 CAD' in printer.format_entry(sell)
     pnl = _posting(sell, ':PnL')

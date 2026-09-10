@@ -5,19 +5,19 @@ from typing import Any
 
 from beancount.core import data
 from beancount.core import flags
+from beancount.core import number
 from beancount.core import position
-from beancount.core.number import MISSING
 
-from .utils import Importer
+from . import utils
 
 # `{}`: an empty cost that defers lot selection to booking (FIFO). MISSING is
 # beancount's interpolation sentinel, typed as Any here since the stubs narrow
 # the CostSpec fields to Decimal/str.
-_MISSING: Any = MISSING
+_MISSING: Any = number.MISSING
 _EMPTY_COST = position.CostSpec(_MISSING, None, _MISSING, None, None, False)
 
 
-class WealthsimpleCreditCardImporter(Importer):
+class WealthsimpleCreditCardImporter(utils.Importer):
     _default_currency = 'CAD'
     _require_lastfour = False
     _regex_fname = re.compile(
@@ -52,7 +52,7 @@ class WealthsimpleCreditCardImporter(Importer):
         )
 
 
-class WealthsimpleImporter(Importer):
+class WealthsimpleImporter(utils.Importer):
     _default_currency = 'CAD'
     _require_lastfour = True
     _regex_fname = re.compile(
@@ -161,7 +161,7 @@ class WealthsimpleImporter(Importer):
         direction = row['direction']
         symbol = row['symbol'].replace('.', '') if row['symbol'] else ''
 
-        narration = atype
+        narration: str = atype
         if sub and sub != '-':
             narration = f'{narration}: {sub}'
 

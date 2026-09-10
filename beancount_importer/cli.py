@@ -6,46 +6,44 @@ from typing import Any
 from typing import Protocol
 from typing import cast
 
-import beangulp  # type: ignore[import-untyped]
+import beangulp
 import click
 from beancount.core import data
 
-from .activobank import ActivobankImporter
-from .amex import AmexImporter
-from .brim import BrimImporter
-from .chase import ChaseImporter
-from .eq import EqImporter
-from .milleniumbcp import MilleniumbcpImporter
-from .paypal import PaypalImporter
-from .rbc import RbcImporter
-from .remitbee import RemitbeeImporter
-from .revolut import RevolutImporter
-from .santander import SantanderImporter
-from .tangerine import TangerineImporter
-from .utils import AccountPattern
-from .utils import Importer
-from .wealthsimple import WealthsimpleCreditCardImporter
-from .wealthsimple import WealthsimpleImporter
+from . import activobank
+from . import amex
+from . import brim
+from . import chase
+from . import eq
+from . import milleniumbcp
+from . import paypal
+from . import rbc
+from . import remitbee
+from . import revolut
+from . import santander
+from . import tangerine
+from . import utils
+from . import wealthsimple
 
 # TODO: enable beangulp type checking once it has a py.typed
 # https://github.com/beancount/beangulp/pull/141
 
 
-IMPORTERS: dict[str, type[Importer]] = {
-    'activobank': ActivobankImporter,
-    'amex': AmexImporter,
-    'brim': BrimImporter,
-    'chase': ChaseImporter,
-    'eq': EqImporter,
-    'milleniumbcp': MilleniumbcpImporter,
-    'paypal': PaypalImporter,
-    'rbc': RbcImporter,
-    'remitbee': RemitbeeImporter,
-    'revolut': RevolutImporter,
-    'santander': SantanderImporter,
-    'tangerine': TangerineImporter,
-    'wealthsimple': WealthsimpleImporter,
-    'wealthsimple-credit-card': WealthsimpleCreditCardImporter,
+IMPORTERS: dict[str, type[utils.Importer]] = {
+    'activobank': activobank.ActivobankImporter,
+    'amex': amex.AmexImporter,
+    'brim': brim.BrimImporter,
+    'chase': chase.ChaseImporter,
+    'eq': eq.EqImporter,
+    'milleniumbcp': milleniumbcp.MilleniumbcpImporter,
+    'paypal': paypal.PaypalImporter,
+    'rbc': rbc.RbcImporter,
+    'remitbee': remitbee.RemitbeeImporter,
+    'revolut': revolut.RevolutImporter,
+    'santander': santander.SantanderImporter,
+    'tangerine': tangerine.TangerineImporter,
+    'wealthsimple': wealthsimple.WealthsimpleImporter,
+    'wealthsimple-credit-card': wealthsimple.WealthsimpleCreditCardImporter,
 }
 
 
@@ -93,7 +91,7 @@ class Ctx:
             raise click.Abort() from e
 
     @classmethod
-    def build_importers(cls) -> Iterable[Importer]:
+    def build_importers(cls) -> Iterable[utils.Importer]:
         config = cls.load_config()
 
         default_expense = cast(
@@ -103,7 +101,7 @@ class Ctx:
             str, config.get('default_equity_account', 'Equity:Unknown')
         )
 
-        patterns: list[AccountPattern] = []
+        patterns: list[utils.AccountPattern] = []
         for section, definitions in config.items():
             if section in {
                 'default_expense_account',
@@ -111,7 +109,9 @@ class Ctx:
             }:
                 continue
             if section == 'patterns':
-                patterns = [AccountPattern.from_config(x) for x in definitions]
+                patterns = [
+                    utils.AccountPattern.from_config(x) for x in definitions
+                ]
                 continue
 
             for definition in definitions:
@@ -120,7 +120,7 @@ class Ctx:
                     account_patterns=(
                         patterns
                         + [
-                            AccountPattern.from_config(x)
+                            utils.AccountPattern.from_config(x)
                             for x in definition.get('patterns', [])
                         ]
                     ),

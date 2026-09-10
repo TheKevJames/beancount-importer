@@ -29,13 +29,11 @@ jobs:
         python-version: ['3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: snok/install-poetry@v1.4.2
-      - uses: actions/setup-python@v7.0.0
+      - uses: astral-sh/setup-uv@v6.0.1
         with:
           python-version: ${{ matrix.python-version }}
-          cache: poetry
-      - run: poetry install --with dev
-      - run: poetry run pytest
+      - run: uv sync --group dev
+      - run: uv run pytest
 
   build:
     if: startsWith(github.ref, 'refs/tags/')
@@ -43,18 +41,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: snok/install-poetry@v1.4.2
-      - uses: actions/setup-python@v7.0.0
+      - uses: astral-sh/setup-uv@v6.0.1
         with:
           python-version: '3.14'
       - name: validate tag matches pyproject.toml
         run: |
-          version="$(poetry version -s)"
+          version="$(uv version --short)"
           if [ "${GITHUB_REF_NAME}" != "${version}" ]; then
             echo "::error::tag ${GITHUB_REF_NAME} does not match pyproject version ${version}"
             exit 1
           fi
-      - run: poetry build
+      - run: uv build
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: dist

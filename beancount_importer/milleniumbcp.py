@@ -7,15 +7,15 @@ from typing import cast
 
 import openpyxl
 from beancount.core import data
-from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.worksheet import worksheet
 
-from .utils import Importer
+from . import utils
 
 Header: TypeAlias = tuple[str, str, str, str, str]
 Row: TypeAlias = tuple[datetime.datetime, datetime.datetime, str, float, float]
 
 
-class MilleniumbcpImporter(Importer):
+class MilleniumbcpImporter(utils.Importer):
     _default_currency = 'EUR'
     _regex_fname = re.compile(r'^MOVS_\d_\d+\.xlsx$')
 
@@ -37,7 +37,7 @@ class MilleniumbcpImporter(Importer):
         # TODO(perf): check out
         # https://github.com/ericgazoni/openpyxl/blob/c55988e4904d4337ce4c35ab8b7dc305bca9de23/doc/source/optimized.rst#L15
         wb = openpyxl.load_workbook(fname)
-        ws = cast(Worksheet, wb.active)
+        ws = cast(worksheet.Worksheet, wb.active)
         if not ws:
             return
 
@@ -45,13 +45,13 @@ class MilleniumbcpImporter(Importer):
         records: list[Row] = []
         for raw in ws.iter_rows(values_only=True):
             if raw[0] == 'Transaction record date ':
-                header = raw  # type: ignore[assignment]
+                header = raw
                 continue
             if not header:
                 continue
             if isinstance(raw[0], str):
                 break
-            records.append(raw)  # type: ignore[arg-type]
+            records.append(raw)
         if not header:
             raise ValueError('malformed workbook')
 

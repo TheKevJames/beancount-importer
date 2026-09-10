@@ -94,7 +94,7 @@ repos:
         types: [python]
         # Allowlist packages below which are known to have no third-party typestubs.
         args:
-          - uvx mypy . --python-executable .venv/bin/python --follow-imports=skip --no-error-summary --no-color-output 2>&1 | grep -E '\[import-untyped\]' | grep -vE '"(beangulp|dateutil|openpyxl.*|py_pdf_parser.*|titlecase|xlrd.*)"' | { ! grep .; }
+          - uvx mypy . --python-executable .venv/bin/python --follow-imports=skip --no-error-summary --no-color-output 2>&1 | grep -E '\[import-untyped\]' | grep -vE '"(beangulp|dateutil|openpyxl.*|titlecase|xlrd.*)"' | { ! grep .; }
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.6
     hooks:

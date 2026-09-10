@@ -15,7 +15,7 @@ dependencies = [
     "beangulp>=0.2.0,<0.3.0",
     "click>=8.0.0,<9.0.0",
     "openpyxl>=3.0.0,<4.0.0",
-    "py-pdf-parser>=0.10.0,<0.14.0",
+    "pdfplumber>=0.11.10,<0.12.0",
     "python-dateutil>=2.0.0,<3.0.0",
     "sh>=2.0.0,<3.0.0",
     "titlecase>=2.0.0,<3.0.0",
@@ -27,12 +27,6 @@ repository = "https://github.com/TheKevJames/beancount-importer"
 
 [project.scripts]
 bean-import = "beancount_importer.cli:run"
-
-[tool.uv]
-# py-pdf-parser hard-pins pdfminer.six==20220524, which carries CVE-2025-64512
-# and CVE-2025-70559. Force a patched release; the loader/table APIs we use are
-# unchanged across these versions.
-override-dependencies = ["pdfminer.six>=20251230"]
 
 [dependency-groups]
 dev = [

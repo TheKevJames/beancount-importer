@@ -47,7 +47,7 @@ repos:
       - id: check-docstring-first
       - id: name-tests-test
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.79
+    rev: v0.0.80
     hooks:
       - id: ty
   - repo: local

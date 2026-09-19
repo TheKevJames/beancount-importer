@@ -95,7 +95,7 @@ jobs:
           name: dist
           path: dist/
       - id: notes
-        uses: orhun/git-cliff-action@v4.9.0
+        uses: orhun/git-cliff-action@v4.9.1
         with:
           config: cliff.toml
           args: --latest

@@ -1,3 +1,4 @@
+import os
 import pathlib
 import re
 import tomllib
@@ -150,7 +151,8 @@ def split(src: str) -> None:  # noqa: C901
     definitions = config.get('rbc') or []
     if len(definitions) > 2:
         merged_regex = re.compile(r'csv\d+\.csv')
-        for dirpath, _dirnames, filenames in pathlib.Path(src).walk():
+        for dirpath_str, _dirnames, filenames in os.walk(src):
+            dirpath = pathlib.Path(dirpath_str)
             for fname in filenames:
                 if not merged_regex.match(fname):
                     continue
@@ -179,7 +181,8 @@ def split(src: str) -> None:  # noqa: C901
     definitions = config.get('wealthsimple') or []
     if len(definitions) >= 2:
         merged_regex = re.compile(r'^activities-export-\d+-\d+-\d+\.csv')
-        for dirpath, _dirnames, filenames in pathlib.Path(src).walk():
+        for dirpath_str, _dirnames, filenames in os.walk(src):
+            dirpath = pathlib.Path(dirpath_str)
             for fname in filenames:
                 if not merged_regex.match(fname):
                     continue

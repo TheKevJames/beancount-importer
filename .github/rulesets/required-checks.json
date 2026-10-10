@@ -1,0 +1,36 @@
+{
+  "name": "required-checks",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["~DEFAULT_BRANCH"],
+      "exclude": []
+    }
+  },
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ],
+  "rules": [
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {"context": "dependency-review"},
+          {"context": "lint"},
+          {"context": "test (3.11)"},
+          {"context": "test (3.12)"},
+          {"context": "test (3.13)"},
+          {"context": "test (3.14)"},
+          {"context": "wip"}
+        ]
+      }
+    }
+  ]
+}

@@ -114,7 +114,6 @@ class Importer(importer.Importer):
 
     def date(self, filepath: str) -> datetime.datetime | None:
         try:
-            # TODO: pass in existing somehow
             value = max(x.date for x in self.extract(filepath, []))
         except ValueError:
             # why are you filing this, anyway?

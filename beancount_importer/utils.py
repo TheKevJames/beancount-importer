@@ -238,6 +238,4 @@ class Importer(importer.Importer):
     def extract(
         self, filepath: str, existing: data.Entries
     ) -> list[data.Directive]:
-        # TODO: print proposed data.Balance() record at end?
-        # It should be manually checked anyway, so probably a bad idea to emit
         return list(self._add_postings(self._filter(self._extract(filepath))))

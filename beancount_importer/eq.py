@@ -78,12 +78,12 @@ class EqImporter(utils.Importer):
             row = self._assign_columns(row_words, bounds)
             # Wrapped descriptions land on a line with no date; fold them back
             # into the transaction they belong to.
-            if not row['Date'] and prev is not None:
-                prev['Description'] = (
-                    f'{prev["Description"]} {row["Description"]}'.strip()
-                )
-                continue
             if prev is not None:
+                if not row['Date']:
+                    prev['Description'] = (
+                        f'{prev["Description"]} {row["Description"]}'.strip()
+                    )
+                    continue
                 yield prev
             prev = row
         if prev is not None:

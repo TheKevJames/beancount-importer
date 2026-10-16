@@ -136,6 +136,12 @@ class Importer(importer.Importer):
         dec = number.D(raw) if isinstance(raw, str) else raw
         return amount.Amount(_normalize_number(dec), currency)
 
+    @staticmethod
+    def _number(amt: amount.Amount) -> decimal.Decimal:
+        if amt.number is None:
+            raise ValueError(f'amount {amt} has no number')
+        return amt.number
+
     def _transaction(
         self,
         *,

@@ -37,14 +37,14 @@ class RemitbeeImporter(utils.Importer):
             send_val, send_cur = row['Amount sent'].split()
             send_amt = self._amount(send_val.replace(',', ''), send_cur)
 
-            # TODO: handle these checks better
-            assert send_amt.number is not None
-            assert recv_amt.number is not None
+            recv_num = self._number(recv_amt)
+            if not recv_num:
+                raise ValueError(f'cannot price transfer receiving 0: {row}')
             # TODO: if we could pass total price instead of price, this posting
             # be more simply and accurately representable as
             # `total_price=to_amt`
             # https://github.com/beancount/beangulp/issues/4
-            price = self._amount(send_amt.number / recv_amt.number, send_cur)
+            price = self._amount(self._number(send_amt) / recv_num, send_cur)
 
             postings = [
                 # TODO: this account needs to be the one with the price to get

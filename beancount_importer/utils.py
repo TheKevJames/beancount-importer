@@ -213,10 +213,9 @@ class Importer(importer.Importer):
                     account_pattern.account, units, flag=account_pattern.flag
                 )
 
-        assert units.number is not None
         account = (
             self.default_expense_account
-            if units.number > 0
+            if self._number(units) > 0
             else self.default_equity_account
         )
         return self._posting(account, units, flag=flags.FLAG_WARNING)

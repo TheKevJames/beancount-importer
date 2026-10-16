@@ -97,8 +97,7 @@ class WealthsimpleImporter(utils.Importer):
         # inferred from the price currency. The commission is excluded from the
         # basis (Rule 6). Reductions defer lot selection to FIFO booking.
         if buying:
-            assert net.number is not None
-            basis = abs(net.number) - commission
+            basis = abs(self._number(net)) - commission
             cost = position.CostSpec(None, basis, currency, None, None, False)
         else:
             cost = _EMPTY_COST

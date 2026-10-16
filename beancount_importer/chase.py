@@ -58,9 +58,6 @@ class ChaseImporter(utils.Importer):
         date = parser.parse(post_date).date()
         payee, narration = self._parse_description(row['Description'])
         amt = self._amount(row['Amount'])
-        # TODO: move to base class
-        if amt == self._amount('0'):
-            return None
 
         return self._transaction(
             meta=meta,

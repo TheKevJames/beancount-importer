@@ -45,6 +45,10 @@ Override these with the optional ``default_expense_account`` and
     default_expense_account = 'Expenses:TODO'
     default_equity_account = 'Income:TODO'
 
+Transactions whose postings are all zero are skipped, unless they have already
+been flagged with a ``!`` for review. The PayPal importer does not apply this
+rule.
+
 In this file, you should also list each of your accounts, eg.
 
 .. code-block:: toml

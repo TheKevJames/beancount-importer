@@ -179,11 +179,20 @@ class Importer(importer.Importer):
                 meta = data.new_metadata(fname, index)
                 yield self._extract_from_row(row, meta)
 
+    @staticmethod
+    def _is_zero(x: data.Transaction) -> bool:
+        numbers = [p.units.number for p in x.postings if p.units is not None]
+        return bool(numbers) and not any(numbers)
+
     def _filter(
         self, xs: Iterable[data.Transaction | None]
     ) -> Iterator[data.Transaction]:
         for x in xs:
             if not x:
+                continue
+            # Flagged transactions are review stubs (eg. Wealthsimple corporate
+            # actions) which must survive even when they carry no amount.
+            if x.flag == flags.FLAG_OKAY and self._is_zero(x):
                 continue
 
             yield x

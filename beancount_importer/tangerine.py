@@ -19,8 +19,6 @@ class TangerineImporter(utils.Importer):
         payee: str | None = row['Memo'].strip() or None
         narration = row['Name']
         amt = self._amount(row['Amount'])
-        if amt == self._amount('0'):
-            return None
 
         return self._transaction(
             meta=meta,

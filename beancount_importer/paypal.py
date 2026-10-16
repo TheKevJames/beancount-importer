@@ -89,17 +89,16 @@ class PaypalImporter(utils.Importer):
         Assumes xs[0] is the source-of-truth expense.
         """
         expense = xs[0]
+        expense_num = self._number(expense[4])
         cost: amount.Amount | None = None
         for x in xs:
             if x[4] in (expense[4], -expense[4]):
                 continue
 
-            # TODO: handle these checks better
-            assert expense[4].number
-            assert x[4].number
-            if expense[4].number < 0 <= x[4].number:
+            x_num = self._number(x[4])
+            if expense_num < 0 <= x_num:
                 continue
-            if expense[4].number >= 0 > x[4].number:
+            if expense_num >= 0 > x_num:
                 continue
             cost = x[4]
             break

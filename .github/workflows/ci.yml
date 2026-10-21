@@ -39,12 +39,27 @@ jobs:
       - run: uv sync --group dev
       - run: uv run pytest
 
+  # Merging a version change is the release: this pushes its tag, with the
+  # `tag` environment's deploy key (see TheKevJames/tools _tag.yml), and the
+  # tag push runs the jobs below.
+  tag:
+    needs: [lint, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    uses: TheKevJames/tools/.github/workflows/_tag.yml@master
+    with:
+      version-command: uv version --short
+    secrets:
+      TAG_DEPLOY_KEY: ${{ secrets.TAG_DEPLOY_KEY }}
+
   build:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [lint, test]
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          # For the check that the tag is on master.
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.3.0
         with:
           # renovate: datasource=github-releases depName=astral-sh/uv
@@ -56,6 +71,12 @@ jobs:
           version="$(uv version --short)"
           if [ "${GITHUB_REF_NAME}" != "${version}" ]; then
             echo "::error::tag ${GITHUB_REF_NAME} does not match pyproject version ${version}"
+            exit 1
+          fi
+      - name: validate the tagged commit is on master
+        run: |
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" origin/master; then
+            echo "::error::${GITHUB_REF_NAME} does not point at a commit on master"
             exit 1
           fi
       - run: uv build
@@ -80,26 +101,11 @@ jobs:
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
 
-  release:
-    if: startsWith(github.ref, 'refs/tags/')
+  github-release:
     needs: [publish]
-    runs-on: ubuntu-26.04
+    if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
-    steps:
-      - uses: actions/checkout@v7.0.1
-        with:
-          fetch-depth: 0
-      - uses: actions/download-artifact@v8.0.2
-        with:
-          name: dist
-          path: dist/
-      - id: notes
-        uses: orhun/git-cliff-action@v4.9.1
-        with:
-          config: cliff.toml
-          args: --latest
-      - uses: softprops/action-gh-release@v3.0.3
-        with:
-          body: ${{ steps.notes.outputs.content }}
-          files: dist/*
+    uses: TheKevJames/tools/.github/workflows/_github-release.yml@master
+    with:
+      artifact: dist
